@@ -32,7 +32,15 @@ module.exports  = function SdkControllers(fn){
 								var _key = "app_id_"+_app_id;
 								var _res_obj;
 								fn.redis.getTtl(_key,function(ttl){
-									if(0 !== ttl){
+									if(false === ttl){
+										_res_obj ={
+											"code" : 500,
+											"error": ""
+										}
+										res.send(500,_res_obj);
+										return next();
+									}									
+									if(ttl > 0){
 										fn.redis.getKey(_key,function(k){
 											if(false === k){
 												_res_obj ={
@@ -40,22 +48,25 @@ module.exports  = function SdkControllers(fn){
 													"error": ""
 												}
 												res.send(500,_res_obj);
+												return next();
 											}else{
 												var  _res_obj ={
 													"app_token":k,
 													"expire":ttl
 												}
 												res.send(200,_res_obj);
+												return next();
 											}
 										});
 									}else{
-										_app_token =fn.string.string(128);
+										_app_token =fn.string.getRandom(128);
 										fn.redis.setKey(_key,3600,_app_token);
 										var  _res_obj ={
 											"app_token":_app_token,
 											"expire":3600
 										}
 										res.send(200,_res_obj);
+										return next();
 									}
 								})
 							}else{
@@ -64,15 +75,18 @@ module.exports  = function SdkControllers(fn){
 									"error": "App Not Exist"
 								}
 								res.send(404, _res_obj );
+								return next();
 							};
 						}
 					);
 				});
 			}
-			return next();
 		},
 		getServer:function(req, res, next){
+			var _token = req.params.token;
 
+			res.send(200);
+			return next();
 		}
 	};
 	return _sdk;

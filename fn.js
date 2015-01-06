@@ -79,7 +79,7 @@ module.exports = function  Fn(app){
 		getTtl : function(key,callback){
 			client.ttl( key ,function(err, value) {
 				if(err){
-					callback(0);
+					callback(false);
 				}else{
 					callback(value);
 				}

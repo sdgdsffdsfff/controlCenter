@@ -1,7 +1,7 @@
 module.exports  = function AdminControllers(fn){
 	var _admin = {};
 	_admin.testAdmin = function(credentials,callback){
-		fn.getKey('admin_token'+credentials,function(v){
+		fn.redis.getKey('admin_token'+credentials,function(v){
 			if(false === v){
 				callback(false);
 			}else{
@@ -24,7 +24,7 @@ module.exports  = function AdminControllers(fn){
 						}else{
 							var _token = fn.getRandomString(64);
 							var _expire = 3600;
-							fn.setKey( 'admin_token'+token,_expire);
+							fn.redis.setKey( 'admin_token'+token,_expire);
 							var res_obj ={
 								"admin_token":  _token ,
 								"expire":_expire
@@ -43,7 +43,7 @@ module.exports  = function AdminControllers(fn){
 	_admin.adminLogout = function(req,res,next){
 		this.testAdmin(req.authorization.credentials,function(r){
 			if(r){
-				fn.rejectKey(function(){
+				fn.redis.rejectKey(function(){
 					res.send(200);
 					return next();	
 				});

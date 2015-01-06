@@ -47,30 +47,48 @@ module.exports = function  Fn(app){
 	_fn.getConfig = function(config){
 		return app[config];
 	};
-	_fn.getRandomString = function(length){
-		return crypto.randomBytes(length || 64).toString('hex');
+	_fn.string ={
+		getRandom:function(length){
+			return crypto.randomBytes(length || 64).toString('hex');
+		}
 	};	
-	_fn.getMd5Sum = function(){
-		return crypto.createHash('md5').update(string).digest("hex");
+	_fn.sql={
+
 	};
-	_fn.sha1HmacSum=function(string,secret){
-		return crypto.createHash('sha1',secret).update(string).digest("hex");
-	}, 
-	_fn.setKey = function(key,expire,value){
-		client.setex(key,expire,value);
+	_fn.hash= {
+		Md5Sum:function(){
+			return crypto.createHash('md5').update(string).digest("hex");
+		},
+		sha1HmacSum:function(string,secret){
+			return crypto.createHash('sha1',secret).update(string).digest("hex");
+		}
 	};
-	_fn.getKey = function(key,callback){
-		client.get( key ,function(err, value) {
-			if(err){
-				callback(false);
-			}else{
-				callback(value);
-			}
-		});
+	_fn.redis = {
+		setKey: function(key,expire,value){
+			client.setex(key,expire,value);
+		},
+		getKey:function(key,callback){
+			client.get( key ,function(err, value) {
+				if(err){
+					callback(false);
+				}else{
+					callback(value);
+				}
+			});
+		},
+		getTtl : function(key,callback){
+			client.ttl( key ,function(err, value) {
+				if(err){
+					callback(0);
+				}else{
+					callback(value);
+				}
+			});
+		},
+		rejectKey : function(key,callback){
+			client.del(key);
+			callback();
+		}
 	};
-	_fn.rejectKey = function(key,callback){
-		client.del(key);
-		callback();
-	}
 	return _fn;
 }

@@ -26,7 +26,7 @@ module.exports  = function SdkControllers(fn){
 							app_key:_app_key	
 						})
 						.limit(1)
-						.only("app_id", "app_key").run(function (err, app) {
+						.only("id","app_id", "app_key").run(function (err, app) {
 							if("undefined" !== typeof(app[0])){
 								var _app_token;
 								var _key = "app_id_"+_app_id;
@@ -59,8 +59,9 @@ module.exports  = function SdkControllers(fn){
 											}
 										});
 									}else{
-										_app_token =fn.string.getRandom(128);
+										_app_token =fn.string.getRandom(32);
 										fn.redis.setKey(_key,3600,_app_token);
+										fn.redis.setKey("app_token_"+_app_token,3600,app[0].id);
 										var  _res_obj ={
 											"app_token":_app_token,
 											"expire":3600
@@ -83,10 +84,93 @@ module.exports  = function SdkControllers(fn){
 			}
 		},
 		getServer:function(req, res, next){
-			var _token = req.params.token;
+			var _app_token = req.params.token;
+			var _user_info =  req.headers['x-llmf-user-info'];
+			if("undefined" === typeof(_user_info)){
+				var res_obj ={
+					"code" : 101,
+					"error": "X-llmf-User-Info Is Required"
+				}
+				res.send(400,res_obj );
+				return next();
+			}else{
+				var _user_info =  fn.string.strToJson(fn.string.base64Decode(_user_data));
+				if("undefined" === typeof(_user_info.phone_imsi)){
+					var res_obj ={
+						"code" : 101,
+						"error": "X-llmf-User-Info Data Incorrect"
+					}
+					res.send(400,res_obj );
+					return next();
+				}else{
+					fn.redis.getKey("app_token_"+_app_token,function(app_id){
+						if(false === app_id){
+							_res_obj ={
+								"code" : 500,
+								"error": ""
+							}
+							res.send(500,_res_obj);
+							return next();
+						}else{
+							var _time =  ( new Date().getTime() )/1000;
+							fn.loadModel(['Users'],function(m){
+								m.Users.find({
+									"user_hashed_imsi":_user_info.phone_imsi
+								})
+								.limit(1)
+								.only("id","user_is_disabled").run(function (err, user) {
+									if("undefined" === typeof(user[0])){
+										var _new_user_id = fn.hash.md5Sum(fn.string.getRandom() + _time);
+										m.Users.create([
+										{
+											user_id:_new_user_id,
+											user_phone_numner:_user_info.phone_number||null,
+											user_hashed_imei:_user_info.phone_imei||null,
+											user_hashed_imsi:_user_info.phone_imsi,
+											user_create_time:_time,
+											user_is_disabled:0
+										}], function (err, item) {
+											// TODO 解决新用户流量赠送机制
+										});
+									}else{
+										fn.loadModel(['Data_users'],function(m){
+											m.Data_users.find({
+												"data_user_id":user[0].id,
+												"data_app_id":app_id,
+												"data_time_start":ormMap('gt', _time),
+												"data_time_end"ormMap('lt', _time),
+												"data_is_active":1
+											})
+											.limit(1)
+											.only("id","data_data_total","data_data_usage")
+											.run(function (err, data_user) {
+												//TODO 解决赠送流量重叠，流量包重叠的问题
+											});
+										});
+									}
+								});	
+							});
+						}
+					});
+				}
 
-			res.send(200);
+
+
+			}
+
+
+			var _user_info =  fn.string.base64Decode(_user_data);
+			res.send(200,fn.string.strToJson(_user_info));
 			return next();
+
+
+
+			
+
+
+
+			//res.send(200);
+			//return next();
 		}
 	};
 	return _sdk;

@@ -10,6 +10,9 @@ module.exports = function  Fn(app){
 	});
 	var client = redis.createClient(app.redis_config.port, app.redis_config.host, null);
 	var _fn ={};
+	_fn.ormMap = functin(fn,v){
+		return orm[fn](v);
+	};
 	_fn.loadModel = function(model ,callback){
 		if("object"  !== typeof(model)){
 			throw '';
@@ -48,6 +51,19 @@ module.exports = function  Fn(app){
 		return app[config];
 	};
 	_fn.string ={
+		base64Ecode:function(string){
+			return new Buffer(string).toString('base64');
+		},
+		base64Decode:function(string){
+			return new Buffer(string, 'base64').toString();
+		},
+		strToJson:function(string){
+			try{
+				return JSON.parse(string);
+			}catch(e){
+				return {};
+			}	
+		},		
 		getRandom:function(length){
 			return crypto.randomBytes(length || 64).toString('hex');
 		}
@@ -56,7 +72,7 @@ module.exports = function  Fn(app){
 
 	};
 	_fn.hash= {
-		Md5Sum:function(){
+		md5Sum:function(string){
 			return crypto.createHash('md5').update(string).digest("hex");
 		},
 		sha1HmacSum:function(string,secret){
@@ -64,11 +80,18 @@ module.exports = function  Fn(app){
 		}
 	};
 	_fn.redis = {
+		key:null,
 		setKey: function(key,expire,value){
-			client.setex(key,expire,value);
+			this.key = key;
+			client.setex(this.key,expire,value);
+		},
+		hmsetKey:function(key,obj,callback){
+			this.key = key;
+			client.hmset(this.key,obj)
 		},
 		getKey:function(key,callback){
-			client.get( key ,function(err, value) {
+			this.key = key;
+			client.get( this.key ,function(err, value) {
 				if(err){
 					callback(false);
 				}else{
@@ -77,7 +100,8 @@ module.exports = function  Fn(app){
 			});
 		},
 		getTtl : function(key,callback){
-			client.ttl( key ,function(err, value) {
+			this.key =key;
+			client.ttl( this.key ,function(err, value) {
 				if(err){
 					callback(false);
 				}else{
@@ -86,7 +110,8 @@ module.exports = function  Fn(app){
 			});
 		},
 		rejectKey : function(key,callback){
-			client.del(key);
+			this.key =key;
+			client.del(this.key);
 			callback();
 		}
 	};

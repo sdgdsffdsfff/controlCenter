@@ -1,0 +1,32 @@
+http://127.0.0.1:4399/app/token
+Accept-Version                               1.0.0
+X-llmf-Application-Id                      tc6nvipyaigwb0ukjuhcj3kz8n8xmig5r2jf0oa4gg25ou61
+X-llmf-REST-API-Key                        vdax1anbo1v1y5iga4n9jdrdkvmo43zeu4tvlx1ahxk4ftxm
+
+
+http://127.0.0.1:4399/app/server/THE TOKEN                    //598a8293690d0bdab6de617a3bad80c6474aa9914f2697ae4d86357bc64eb1b3
+
+Accept-Version                               1.0.0
+X-llmf-User-Info                             ewogICAgInBob25lX251bWJlciI6IDEzMzAzMzMzMzMzLCAKICAgICJwaG9uZV9pbWVpIjogIjRhNjJmNGNkMjhkMzg1N2U1ZTY2OTA2NGRlMTFiNTE5IiwgCiAgICAicGhvbmVfaW1zaSI6ICI1NjU5MGE0YzE1ODUwNDEzZGY2MDZiZWE3ZjE5MGYwNyIKfQ==
+
+
+
+
+
+test data
+imei:915828347893222
+imsi:869271552109461
+
+{
+    "phone_number": 13303333333, 
+    "phone_imei": "4a62f4cd28d3857e5e669064de11b519", 
+    "phone_imsi": "56590a4c15850413df606bea7f190f07"
+}
+
+after base64 
+
+ewogICAgInBob25lX251bWJlciI6IDEzMzAzMzMzMzMzLCAKICAgICJwaG9uZV9pbWVpIjogIjRhNjJmNGNkMjhkMzg1N2U1ZTY2OTA2NGRlMTFiNTE5IiwgCiAgICAicGhvbmVfaW1zaSI6ICI1NjU5MGE0YzE1ODUwNDEzZGY2MDZiZWE3ZjE5MGYwNyIKfQ==
+
+
+
+

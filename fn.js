@@ -81,15 +81,25 @@ module.exports = function  Fn(app){
 	};
 	_fn.redis = {
 		key:null,
-		setKey: function(key,expire,value){
+		setex: function(key,expire,value){
 			this.key = key;
 			client.setex(this.key,expire,value);
 		},
-		hmsetKey:function(key,obj,callback){
+		hmset:function(key,obj,callback){
 			this.key = key;
 			client.hmset(this.key,obj)
 		},
-		getKey:function(key,callback){
+		hgetall:function(key,callback){
+			this.key = key;
+			client.hgetall(this.key, function (err, obj) {
+				if(err){
+					callback(false);
+				}else{
+					callback(obj);
+				}
+			});
+		},
+		get:function(key,callback){
 			this.key = key;
 			client.get( this.key ,function(err, value) {
 				if(err){
@@ -99,7 +109,7 @@ module.exports = function  Fn(app){
 				}
 			});
 		},
-		getTtl : function(key,callback){
+		ttl : function(key,callback){
 			this.key =key;
 			client.ttl( this.key ,function(err, value) {
 				if(err){
@@ -109,13 +119,13 @@ module.exports = function  Fn(app){
 				}
 			});
 		},
-		rejectKey : function(key,callback){
+		del : function(key,callback){
 			this.key =key;
 			client.del(this.key);
 			callback();
 		}
 	};
-	_fn.redis.hmsetKey.prototype.setTtl = function(ttl){
+	_fn.redis.hmset.prototype.expire = function(ttl){
 		client.expire(this.key,ttl);
 	}
 	return _fn;

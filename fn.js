@@ -125,6 +125,9 @@ module.exports = function  Fn(app){
 			callback();
 		}
 	};
+	_fn.date ={
+		
+	}
 	_fn.redis.hmset.prototype.expire = function(ttl){
 		client.expire(this.key,ttl);
 	}

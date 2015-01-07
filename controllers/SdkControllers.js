@@ -128,8 +128,8 @@ module.exports  = function SdkControllers(fn){
 							res.send(500,_res_obj);
 							return next();
 						}else{
-							console.log(app);
 							var _time =  ( Date.parse(new Date()) )/1000;
+							var _req_token = fn.string.getRandom(128);
 							fn.loadModel(['Users'],function(m){
 								m.Users.find({
 									"user_hashed_imsi":_user_info.phone_imsi
@@ -148,7 +148,10 @@ module.exports  = function SdkControllers(fn){
 											user_create_time:_time,
 											user_is_disabled:0
 										}], function (err, item) {
-											console.log(item);
+											var _id = item[0].id;
+											fn.loadModel(['Users'],function(m){
+												
+											});
 
 
 
@@ -161,7 +164,6 @@ module.exports  = function SdkControllers(fn){
 												"data_time_end":fn.ormMap('lt', _time),
 												"data_is_active":1	
 										}
-
 										fn.loadModel(['Data_users'],function(m){
 											m.Data_users.find(_common_condition)
 											.limit(1)
@@ -175,19 +177,42 @@ module.exports  = function SdkControllers(fn){
 														.limit(1)
 														.only("id","data_data_total","data_data_usage")
 														.run(function (err, data_package) {	
-																if("undefined" === typeof(data_package[0])){
-																	_res_obj ={
-																		"code" : 500,
-																		"error": "No Available Data For User"
-																	}
-																	res.send(500,_res_obj);
-																	return next();
-																});
+															if("undefined" === typeof(data_package[0])){
+																_res_obj ={
+																	"code" : 500,
+																	"error": "No Available Data For User"
+																}
+																res.send(500,_res_obj);
+																return next();
+															}else{
+																var data_left = data_package[0].data_data_total >  data_package[0].data_data_usage ? data_package[0].data_data_total -  data_package[0].data_data_usage: 0;
+																new fn.redis.hmset("request_token_"+_req_token,{
+																	"user_id":user[0].id,
+																	"data_left":data_left,
+																	"data_type":0
+																}).expire(7200);
+																var  _res_obj ={
+																	"req_token":_req_token,
+																	"expire":7200
+																}
+																res.send(200,_res_obj);
+																return next();	
+															}
 														});													
 													});
 												}else{
-													data_left = data_package[0].data_data_total >  data_package[0].data_data_usage ? data_package[0].data_data_total -  data_package[0].data_data_usage: 0;
-
+													var data_left = data_user[0].data_data_total >  data_user[0].data_data_usage ? data_user[0].data_data_total -  data_user[0].data_data_usage: 0;
+													new fn.redis.hmset("request_token_"+_req_token,{
+														"user_id":user[0].id,
+														"data_left":data_left,
+														"data_type":1
+													}).expire(7200);
+													var  _res_obj ={
+														"req_token":_req_token,
+														"expire":7200
+													}
+													res.send(200,_res_obj);
+													return next();													
 												};
 											});
 										});

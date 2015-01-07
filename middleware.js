@@ -8,6 +8,6 @@ module.exports  = function Middleware(fn){
 	}
 	_return.getServerPort = function(){
 		return fn.getConfig("port");
-	}
+	};
 	return _return;
 }

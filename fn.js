@@ -115,5 +115,8 @@ module.exports = function  Fn(app){
 			callback();
 		}
 	};
+	_fn.redis.hmsetKey.prototype.setTtl = function(ttl){
+		client.expire(this.key,ttl);
+	}
 	return _fn;
 }

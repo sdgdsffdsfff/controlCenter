@@ -59,15 +59,31 @@ module.exports  = function SdkControllers(fn){
 											}
 										});
 									}else{
-										_app_token =fn.string.getRandom(32);
-										fn.redis.setKey(_key,3600,_app_token);
-										fn.redis.setKey("app_token_"+_app_token,3600,app[0].id);
-										var  _res_obj ={
-											"app_token":_app_token,
-											"expire":3600
-										}
-										res.send(200,_res_obj);
-										return next();
+										fn.loadModel(['App_data_rule'],function(m){
+											m.App_data_rule.find(
+												{	
+													app_id: _app_id,
+													app_data_rule_type:0,
+												})
+												.limit(1)
+												.only("app_data_rule_amount")
+												.run(function (err, app_data) {
+													var _data_amount  = app_data[0].app_data_amount || 0;
+													_app_token =fn.string.getRandom(32);
+													fn.redis.setKey(_key,3600,_app_token);
+													fn.redis.hmsetKey("app_token_"+_app_token,{
+														'app_id':app[0].id,
+														'new_user_data_amount': _data_amount
+													}).setTtl(3600);
+													var  _res_obj ={
+														"app_token":_app_token,
+														"expire":3600
+													}
+													res.send(200,_res_obj);
+													return next();
+
+												});
+										});
 									}
 								})
 							}else{

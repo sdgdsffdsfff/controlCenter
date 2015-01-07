@@ -10,7 +10,7 @@ module.exports = function  Fn(app){
 	});
 	var client = redis.createClient(app.redis_config.port, app.redis_config.host, null);
 	var _fn ={};
-	_fn.ormMap = functin(fn,v){
+	_fn.ormMap = function(fn,v){
 		return orm[fn](v);
 	};
 	_fn.loadModel = function(model ,callback){

@@ -1,7 +1,7 @@
 module.exports = function (middleware){
 	var restify  =  require("restify");
 	var server = restify.createServer({
-		name: 'myapp',
+		name: 'Llmf Inc.',
  		version: '1.0.0'
 	});
 	restify.CORS.ALLOW_HEADERS.push('accept');

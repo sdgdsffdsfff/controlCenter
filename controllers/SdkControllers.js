@@ -62,16 +62,16 @@ module.exports  = function SdkControllers(fn){
 										fn.loadModel(['App_data_rule'],function(m){
 											m.App_data_rule.find(
 												{	
-													app_id: _app_id,
+													app_id:app[0].id,
 													app_data_rule_type:0,
 												})
 												.limit(1)
 												.only("app_data_rule_amount")
 												.run(function (err, app_data) {
-													var _data_amount  = app_data[0].app_data_amount || 0;
+													var _data_amount  = "undefined" === typeof(app_data[0]) ? 0 :app_data[0].app_data_amount;
 													_app_token =fn.string.getRandom(32);
 													fn.redis.setKey(_key,3600,_app_token);
-													fn.redis.hmsetKey("app_token_"+_app_token,{
+													new fn.redis.hmsetKey("app_token_"+_app_token,{
 														'app_id':app[0].id,
 														'new_user_data_amount': _data_amount
 													}).setTtl(3600);
@@ -154,7 +154,7 @@ module.exports  = function SdkControllers(fn){
 												"data_user_id":user[0].id,
 												"data_app_id":app_id,
 												"data_time_start":ormMap('gt', _time),
-												"data_time_end"ormMap('lt', _time),
+												"data_time_end":ormMap('lt', _time),
 												"data_is_active":1
 											})
 											.limit(1)

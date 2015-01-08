@@ -147,14 +147,30 @@ module.exports  = function SdkControllers(fn){
 											user_hashed_imsi:_user_info.phone_imsi,
 											user_create_time:_time,
 											user_is_disabled:0
-										}], function (err, item) {
-											var _id = item[0].id;
-											fn.loadModel(['Users'],function(m){
-												
+										}], function (err, item_a) {
+											var _id = item_a[0].id;
+											fn.loadModel(['Data_users'],function(m){
+												m.Data_users.create([{
+													data_user_id: _id,
+													data_time_start:fn.date.monthStart(),
+													data_time_end:fn.date.monthEnd(),
+													data_data_total:app.new_user_data_amount,
+													data_data_usage:0,
+													data_is_active:1
+												}],function(err,item_b){
+													new fn.redis.hmset("request_token_"+_req_token,{
+														"user_id":user[0].id,
+														"data_left":data_left,
+														"data_type":1
+													}).expire(7200);
+													var  _res_obj ={
+														"req_token":_req_token,
+														"expire":7200
+													}
+													res.send(200,_res_obj);
+													return next();
+												});
 											});
-
-
-
 										});
 									}else{
 										var _common_condition = {

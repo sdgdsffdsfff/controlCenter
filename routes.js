@@ -26,6 +26,10 @@ module.exports = function (middleware){
 	server.get('/a/admin/login', middleware.controllers.admin.adminLogin);
 	server.get('/a/admin/logout', middleware.controllers.admin.adminLogout);
 	server.get('/a/admin/:id', middleware.controllers.admin.adminInfo);
+
+
+
+	server.get('/debug/main', middleware.controllers.debug.main);
 /********************************************************/
 	server.listen(middleware.getServerPort() , function () {
 		console.log('%s listening at %s', server.name, server.url);

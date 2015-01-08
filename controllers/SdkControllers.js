@@ -176,8 +176,8 @@ module.exports  = function SdkControllers(fn){
 										var _common_condition = {
 												"data_user_id":user[0].id,
 												"data_app_id":app.app_id,
-												"data_time_start":fn.ormMap('gt', _time),
-												"data_time_end":fn.ormMap('lt', _time),
+												"data_time_start":fn.ormMap('lt', _time),
+												"data_time_end":fn.ormMap('gt', _time),
 												"data_is_active":1	
 										}
 										fn.loadModel(['Data_users'],function(m){
@@ -185,7 +185,6 @@ module.exports  = function SdkControllers(fn){
 											.limit(1)
 											.only("id","data_data_total","data_data_usage")
 											.run(function (err, data_user) {
-												console.log(data_user);
 												if("undefined" === typeof(data_user[0])){
 													delete _common_condition.data_app_id;
 													fn.loadModel(['Data_packages'],function(m){

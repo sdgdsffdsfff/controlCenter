@@ -31,6 +31,10 @@ module.exports = function (middleware){
 
 	server.get('/debug/main', middleware.controllers.debug.main);
 /********************************************************/
+	server.on('uncaughtException', function (req, res, route, err) {
+	    console.error(err.stack);
+	   // process.exit(1);
+	});
 	server.listen(middleware.getServerPort() , function () {
 		console.log('%s listening at %s', server.name, server.url);
 	});

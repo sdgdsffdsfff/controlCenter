@@ -126,17 +126,15 @@ module.exports = function  Fn(app){
 		}
 	};
 	_fn.date ={
-		date:function(){
-			return new Date();
+		now:function(){
+			return moment().unix();
 		},
-		todayDate:function(){
-			var date = this.date();
-			return Date.parse(date)/1000
+		monthStart:function(){
+			return moment().startOf('month').unix();
 		},
-		firstDay:function(){
-			var date = this.date();
-			return Date.parse(new Date(date.getFullYear(),date.getMonth(), 1))/1000;
-		}
+		monthEnd:function(){
+			return moment().endOf('month').unix();
+		},
 	};
 	_fn.redis.hmset.prototype.expire = function(ttl){
 		client.expire(this.key,ttl);

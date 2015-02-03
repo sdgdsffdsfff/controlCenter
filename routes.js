@@ -20,16 +20,32 @@ module.exports = function (middleware){
 	server.use(restify.bodyParser());
 
 /*************************APIS FOR APPS SDK **************************/
-	server.get(   {path: '/app/token', version: '1.0.0' },middleware.controllers.sdk.v1.getAppToken);
-	server.get(   {path: '/app/server/:token', version: '1.0.0' },middleware.controllers.sdk.v1.getServer);
+	server.get({path: '/app/token', version: '1.0.0' },middleware.controllers.sdk.v1.getAppToken);
+	server.get({path: '/app/runtime/:token', version: '1.0.0' },middleware.controllers.sdk.v1.getServer);
+
 /*************************APIS FOR ADMIN PANEL**********************/
+
 	server.get('/a/admin/login', middleware.controllers.admin.adminLogin);
 	server.get('/a/admin/logout', middleware.controllers.admin.adminLogout);
 	server.get('/a/admin/:id', middleware.controllers.admin.adminInfo);
 
+	server.get('/a/app/:id', middleware.controllers.admin.listApps);
+	server.post('/a/app/:id', middleware.controllers.admin.createApp);
+	server.put('/a/app/:id', middleware.controllers.admin.modifyApp);
+	server.del('/a/app/:id', middleware.controllers.admin.deleteApp);
 
+	server.get('/a/data/ruler/:id', middleware.controllers.admin.listAppDataRule);
+	server.post('/a/data/ruler/:id', middleware.controllers.admin.createAppDataRule);
+	server.put('/a/data/ruler/:id', middleware.controllers.admin.modifyAppDataRule);
+	server.del('/a/data/ruler/:id', middleware.controllers.admin.deleteAppDataRule);	
 
-	server.get('/debug/main', middleware.controllers.debug.main);
+	server.get('/a/whitelist/:appid/:id', middleware.controllers.admin.listAppDataRule);
+	server.post('/a/whitelist/:appid/:id', middleware.controllers.admin.createAppDataRule);
+	server.put('/a/whitelist/:appid/:id', middleware.controllers.admin.modifyAppDataRule);
+	server.del('/a/whitelist/:appid/:id', middleware.controllers.admin.deleteAppDataRule);
+
+	server.get('/debug/:main', middleware.controllers.debug.main);
+
 /********************************************************/
 	server.on('uncaughtException', function (req, res, route, err) {
 	    console.error(err.stack);

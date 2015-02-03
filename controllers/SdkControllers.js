@@ -1,5 +1,38 @@
 module.exports  = function SdkControllers(fn){
 	var _sdk  = {} ;
+	var _static_key ={
+		app_id:"app_id_",
+		app_token:"app_token_",
+
+	};
+	var _handleSqlErroe = function(cb){
+
+	};
+	var _createNewData = function(app_id,callback){
+		fn.loadModel(['App_data_rule','Data_users','Data_packages'],function(m){
+			m.App_data_rule.find(
+			{	
+				app_id:app_id,
+				app_data_rule_type:0,
+			})
+			.limit(1)
+			.only("app_data_rule_amount")
+			.run(function (err, app_data) {
+				var _data_amount  = "undefined" === typeof(app_data[0]) ? 0 :app_data[0].app_data_amount;
+				var _key = _static_key.app_id+app_id;
+				_app_token =fn.string.getRandom(32);
+				fn.redis.setex(_key,3600,_app_token);
+				new fn.redis.hmset(_static_key.app_token+_app_token,{
+					'app_id': app_id,
+					'new_user_data_amount': _data_amount
+				}).expire(3600);
+				callback(_app_token);
+			});
+		});
+	};
+	var _getAvailableData = function(cb){
+
+	};
 	_sdk.v1={
 		getAppToken: function (req, res, next) {
 			var _app_id = req.headers['x-llmf-application-id'];
@@ -29,7 +62,7 @@ module.exports  = function SdkControllers(fn){
 						.only("id","app_id", "app_key").run(function (err, app) {
 							if("undefined" !== typeof(app[0])){
 								var _app_token;
-								var _key = "app_id_"+_app_id;
+								var _key = _static_key.app_id +_app_id;
 								var _res_obj;
 								fn.redis.ttl(_key,function(ttl){
 									if(false === ttl){
@@ -59,30 +92,13 @@ module.exports  = function SdkControllers(fn){
 											}
 										});
 									}else{
-										fn.loadModel(['App_data_rule'],function(m){
-											m.App_data_rule.find(
-												{	
-													app_id:app[0].id,
-													app_data_rule_type:0,
-												})
-												.limit(1)
-												.only("app_data_rule_amount")
-												.run(function (err, app_data) {
-													var _data_amount  = "undefined" === typeof(app_data[0]) ? 0 :app_data[0].app_data_amount;
-													_app_token =fn.string.getRandom(32);
-													fn.redis.setex(_key,3600,_app_token);
-													new fn.redis.hmset("app_token_"+_app_token,{
-														'app_id':app[0].id,
-														'new_user_data_amount': _data_amount
-													}).expire(3600);
-													var  _res_obj ={
-														"app_token":_app_token,
-														"expire":3600
-													}
-													res.send(200,_res_obj);
-													return next();
-
-												});
+										_createNewData(app[0].id,function(app_token){
+											var  _res_obj ={
+												"app_token":app_token,
+												"expire":3600
+											}
+											res.send(200,_res_obj);
+											return next();
 										});
 									}
 								})
@@ -129,22 +145,27 @@ module.exports  = function SdkControllers(fn){
 							return next();
 						}else{
 							var _time =  ( Date.parse(new Date()) )/1000;
-							var _req_token = fn.string.getRandom(128);
+							var _req_token = fn.string.getRandom(64);
 							fn.loadModel(['Users'],function(m){
 								m.Users.find({
-									"user_hashed_imsi":_user_info.phone_imsi
+									"user_card_imsi":_user_info.phone_imsi
 								})
 								.limit(1)
 								.only("id","user_is_disabled")
 								.run(function (err, user) {
+									console.log(err);
+									console.log(user);
+
 									if("undefined" === typeof(user[0])){
 										var _new_user_id = fn.hash.md5Sum(fn.string.getRandom() + _time);
 										m.Users.create([
 										{
 											user_id:_new_user_id,
+											user_sdk_version:_user_info.sdk_version||null,
+											user_phone_system:_user_info.system||null,
 											user_phone_numner:_user_info.phone_number||null,
-											user_hashed_imei:_user_info.phone_imei||null,
-											user_hashed_imsi:_user_info.phone_imsi,
+											user_phone_imei:_user_info.phone_imei||null,
+											user_card_imsi:_user_info.phone_imsi,
 											user_create_time:_time,
 											user_is_disabled:0
 										}], function (err, item_a) {
@@ -159,8 +180,8 @@ module.exports  = function SdkControllers(fn){
 													data_is_active:1
 												}],function(err,item_b){
 													new fn.redis.hmset("request_token_"+_req_token,{
-														"user_id":user[0].id,
-														"data_left":data_left,
+														"user_id":item_a[0].id,
+														"data_left":app.new_user_data_amount,
 														"data_type":1
 													}).expire(7200);
 													var  _res_obj ={
@@ -224,6 +245,15 @@ module.exports  = function SdkControllers(fn){
 													}).expire(7200);
 													var  _res_obj ={
 														"req_token":_req_token,
+														"servers":{
+															"http":"10.0.0.100:8080",
+															"https":"10.0.0.100:8080",
+															"spdy":"10.0.0.100:8081"
+														},
+														"error_policy":{
+															"retry":5,
+															"gap":1800
+														},
 														"expire":7200
 													}
 													res.send(200,_res_obj);

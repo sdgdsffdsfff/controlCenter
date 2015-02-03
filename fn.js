@@ -68,8 +68,19 @@ module.exports = function  Fn(app){
 			return crypto.randomBytes(length || 64).toString('hex');
 		}
 	};	
-	_fn.sql={
+	_fn.orm={
+		list:function(model,condition,field_map,cb){
 
+		},
+		add:function(model,field_map,data,cb){
+
+		},
+		modify:function(model,condition,field_map,data,cb){
+
+		},
+		delete:function(model,condition,cb){
+
+		}
 	};
 	_fn.hash= {
 		md5Sum:function(string){

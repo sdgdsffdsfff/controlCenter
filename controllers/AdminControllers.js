@@ -50,8 +50,71 @@ module.exports  = function AdminControllers(fn){
 			}
 		})
 	};
+
 	_admin.adminInfo = function(req,res,next){
 
-	}	
+	};
+	/***********/
+	_admin.listApps = function(req,res,next){
+		if("undefined"=== typeof(req.params.id)){
+
+
+
+		}else{
+
+
+		}
+
+
+
+
+		res.send(200,"");
+		return next();	
+	};
+	_admin.createApp = function(req,res,next){
+
+	};
+	_admin.modifyApp = function(req,res,next){
+
+	};	
+	_admin.deleteApp = function(req,res,next){
+
+	};
+	/************/
+	_admin.listAppDataRule = function(req,res,next){
+
+	};
+	_admin.createAppDataRule = function(req,res,next){
+
+	};
+	_admin.modifyAppDataRule = function(req,res,next){
+
+	};	
+	_admin.deleteAppDataRule = function(req,res,next){
+
+	}
+	/************/
+	_admin.listAppWhiteList = function(req,res,next){
+
+	};
+	_admin.createAppWhiteList = function(req,res,next){
+
+	};
+	_admin.modifyAppWhiteList = function(req,res,next){
+
+	};	
+	_admin.deleteAppWhiteList = function(req,res,next){
+
+	};
+	/************/
+	_admin.AppDataUsage = function(req,res,next){
+
+	};
+	/************/
+	_admin.downloadSdk = function(req,res,next){
+
+	}
+
+
 	return _admin;
 }

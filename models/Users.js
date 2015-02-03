@@ -2,8 +2,11 @@ module.exports = function(db , cb){
 	db.define('users',{
 			id:Number,
 			user_id:String,
+			user_sdk_version:String,
+			user_phone_system:String,
 			user_phone_numner:Number,
-			user_hashed_imei:String,
+			user_phone_imei:String,
+			user_card_imsi:String,
 			user_create_time:Number,
 			user_is_disabled:[0,1]
 		},

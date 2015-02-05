@@ -20,9 +20,9 @@ module.exports = function (middleware){
 	server.use(restify.bodyParser());
 
 /*************************APIS FOR APPS SDK **************************/
-	server.get({path: '/app/token', version: '1.0.0' },middleware.controllers.sdk.v1.getAppToken);
-	server.get({path: '/app/runtime/:token', version: '1.0.0' },middleware.controllers.sdk.v1.getServer);
-
+	server.get({path: '/app/token', version: '1.0.0' },middleware.controllers.sdkv1.getAppToken);
+	server.get({path: '/app/runtime/:token', version: '1.0.0' },middleware.controllers.sdkv1.getRuntime);
+	server.get({path: '/app/flow/available/:token', version: '1.0.0' },middleware.controllers.sdkv1.getFlow);
 /*************************APIS FOR ADMIN PANEL**********************/
 
 	server.get('/a/admin/login', middleware.controllers.admin.adminLogin);

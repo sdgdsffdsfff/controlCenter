@@ -50,6 +50,45 @@ module.exports = function  Fn(app){
 	_fn.getConfig = function(config){
 		return app[config];
 	};
+	_fn.tester ={
+		emptyObject:function(o){
+			if("object"!==typeof(o)){
+				return false;
+			}
+			if(0=== Object.keys(o).length){
+				return true;
+			}else{
+				return false;
+			}
+		}
+	};
+	_fn.array={
+		inArray :function(n,arr){
+			for(var index in arr){
+				if (n === arr[index]){
+					return true;
+				}
+			}
+			return false;
+		}
+	};
+	_fn.mapingValues = function(map,values,needed,cb){
+		var _cb_values =[];
+		for(var i in values){
+			var _temp ={};
+			for(var j in  values[i]){
+				if("undefined" === typeof(needed[0]) || false === needed || _fn.array.inArray(j,needed)){
+					if("undefined"!== typeof(map[j])){
+						_temp[map[j]] = values[i][j];
+					}else {
+						_temp[j] = values[i][j];
+					}
+				}
+			}
+			_cb_values.push(_temp);
+		}
+		cb(_cb_values);
+	};
 	_fn.string ={
 		base64Ecode:function(string){
 			return new Buffer(string).toString('base64');
@@ -67,26 +106,72 @@ module.exports = function  Fn(app){
 		getRandom:function(length){
 			return crypto.randomBytes(length || 64).toString('hex');
 		}
-	};	
+	};
 	_fn.orm={
-		list:function(model,condition,field_map,cb){
-
+		'get':function(model,condition,fields_map,needed_fields,cb){
+			this.list(model,condition,1,0,fields_map,needed_fields,function(v){
+				if([]!==v){
+					cb(v[0]);
+				}else{
+					cb({});
+				}
+			})
 		},
-		add:function(model,field_map,data,cb){
-
+		'list':function(model,condition,limit,offset,fields_map,needed_fields,cb){
+			_fn.loadModel([model],function(m) {
+            var _m = m[model]
+                .find(condition)
+                .limit(limit)
+				.offset(offset);
+			   	if(false !== needed_fields  && "undefined" === typeof(needed_fields[0])){
+					_m.only(needed_fields)
+				}
+				_m.run(function (err, values) {
+                    if ("undefined" === typeof(values[0])) {
+						cb([]);
+                    }else{
+						_fn.mapingValues(fields_map,values,needed_fields,function(v){
+							cb(v);
+						})
+					}
+                });
+			});
 		},
-		modify:function(model,condition,field_map,data,cb){
-
+		'create':function(model,fields_map,data,cb){
+			var needed_fields;
+			needed_fields = Object.keys(fields_map);
+			_fn.mapingValues(fields_map,data,needed_fields,function(v){
+				_fn.loadModel([model],function(m) {
+					m[model].create(v,function(err,values){
+						needed_fields=[];
+						_temp={};
+						for(var i in fields_map){
+							_temp[fields_map[i]]=i;
+							needed_fields.push(fields_map[i]);
+						}
+						_fn.mapingValues(_temp,values,needed_fields,function(v){
+							cb(v);
+						});
+					});
+				});
+			});
 		},
-		delete:function(model,condition,cb){
+		'modify':function(model,condition,field_map,data,cb){
+			_fn.loadModel([model],function(m) {
 
+			});
+		},
+		'delete':function(model,condition,cb){
+			_fn.loadModel([model],function(m) {
+
+			});
 		}
 	};
 	_fn.hash= {
-		md5Sum:function(string){
+		'md5Sum':function(string){
 			return crypto.createHash('md5').update(string).digest("hex");
 		},
-		sha1HmacSum:function(string,secret){
+		'sha1HmacSum':function(string,secret){
 			return crypto.createHash('sha1',secret).update(string).digest("hex");
 		}
 	};
@@ -96,7 +181,10 @@ module.exports = function  Fn(app){
 			this.key = key;
 			client.setex(this.key,expire,value);
 		},
-		hmset:function(key,obj,callback){
+		hset:function(key,field,value){
+			client.hset(key,field,value);
+		},
+		hmset:function(key,obj){
 			this.key = key;
 			client.hmset(this.key,obj)
 		},

@@ -22,7 +22,7 @@ module.exports  = function Sdkv1Controllers(fn){
 		'104':"X-llmf-User-Info Data Incorrect",
 		'105':"App Not Exist",
 		'106':"App Token Is Not Exist Or Expired",
-		'106':"Request Token Is Not Exist  Or Expired",
+		'107':"Request Token Is Not Exist  Or Expired",
 		'500':"Server Error"
 	};
 
@@ -289,23 +289,26 @@ module.exports  = function Sdkv1Controllers(fn){
 						var  _res_obj ={
 							"request_token":_req_token,
 							"servers":{
-								"http":"10.0.0.100:8080",
-								"https":"10.0.0.100:8080",
-								"spdy":"10.0.0.100:8081"
+								"http":"10.1.1.100:8080",
+								"https":"10.1.1.100:8080",
+								"spdy":"10.1.1.100:8081"
 							},
 							"error_policy":{
-								"retry":5,
-								"gap":1800
+								"retry":2,
+								"interval":60
 							},
 							"network_policy":{
 								"cellular":true,
-								"wifi":false
+								"wifi":true
+							},
+							"connect_policy":{
+								"update":300
 							},
 							"expire":7200
 						};
 						fn.loadModel(['Users'],function(m){
 							m.Users.find({
-								"user_card_imsi":_user_info.phone_imsi
+								"user_card_imsi":_user_data.phone_imsi
 							})
 								.limit(1)
 								.only("id","user_is_disabled")
@@ -339,10 +342,6 @@ module.exports  = function Sdkv1Controllers(fn){
 											}else{
 												_typec=false;
 											}
-
-
-
-
 											_createNewDataRecord(_types,_user_id,null,_ns.amount,_time,_time+_ns.duration,function(s_id){
 												_createNewDataRecord(_typec,_user_id,app.app_id,_nc.amount,_time,_time+_nc.duration,function(c_id){
 													_getWhiteList(function(witelist){
@@ -422,9 +421,43 @@ module.exports  = function Sdkv1Controllers(fn){
 		getFlow:function(req,res,next){
 			res.setHeader('content-type', 'application/json');
 			var _req_token = req.params.token;
-			fn.redis.hgetall(_static_key.request_token+_req_token,function(req){
-
+			fn.redis.ttl(_static_key.request_token+_req_token,function(t){
+				if(-2 === t){
+					_res_obj = {
+						"available_flow":0,
+    					"expire":0
+					};
+					res.send(200,_res_obj);
+					return next();
+				}else{
+					fn.redis.hgetall(_static_key.request_token+_req_token,function(r){
+						fn.redis.hgetall(_static_key.user_data+ r.user_id,function(d) {
+							if(null == d){
+								_res_obj = {
+									"available_flow":0,
+									"expire":0
+								};
+							}else{
+								_res_obj = {
+									"available_flow": parseInt(d.data_left),
+									"expire":t
+								};
+							}
+							res.send(200,_res_obj);
+							return next();
+						});
+					});
+				}
 			});
+		},
+		checkHealth:function(req,res,next){
+			res.setHeader('content-type', 'application/json');
+			_res_obj = {
+				"available_flow": parseInt(d.data_left),
+				"expire":t
+			};
+			res.send(200,_res_obj);
+			return next();
 		}
 	};
 	return _sdk;

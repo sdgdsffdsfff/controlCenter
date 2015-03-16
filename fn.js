@@ -156,14 +156,28 @@ module.exports = function  Fn(app){
 				});
 			});
 		},
-		'modify':function(model,condition,field_map,data,cb){
+		'update':function(model,condition,fields_map,data,needed_fields,cb){
 			_fn.loadModel([model],function(m) {
-
+				_fn.mapingValues(fields_map,data,needed_fields,function(v){
+					m[model].find(
+						condition,
+						function(err,values){
+							for(var i in v[0]){
+								values[0][i] = v[0][i];
+							}
+							values[0].save(function (err) {
+								cb();
+							});
+						}
+					);
+				});
 			});
 		},
 		'delete':function(model,condition,cb){
 			_fn.loadModel([model],function(m) {
-
+				m[model].find(condition).remove(function (err) {
+					cb();
+				});
 			});
 		}
 	};
@@ -222,6 +236,11 @@ module.exports = function  Fn(app){
 			this.key =key;
 			client.del(this.key);
 			callback();
+		}
+	};
+	_fn.admin ={
+    	test_admin : function(){
+
 		}
 	};
 	_fn.date ={

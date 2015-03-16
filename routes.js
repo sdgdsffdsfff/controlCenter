@@ -23,26 +23,31 @@ module.exports = function (middleware){
 	server.get({path: '/app/token', version: '1.0.0' },middleware.controllers.sdkv1.getAppToken);
 	server.get({path: '/app/runtime/:token', version: '1.0.0' },middleware.controllers.sdkv1.getRuntime);
 	server.get({path: '/app/flow/available/:token', version: '1.0.0' },middleware.controllers.sdkv1.getFlow);
+	server.get({path: '/server/healthcheck/:server', version: '1.0.0' },middleware.controllers.sdkv1.checkHealth);
+
 /*************************APIS FOR ADMIN PANEL**********************/
 
-	server.get('/a/admin/login', middleware.controllers.admin.adminLogin);
-	server.get('/a/admin/logout', middleware.controllers.admin.adminLogout);
-	server.get('/a/admin/:id', middleware.controllers.admin.adminInfo);
+	server.post('/a/admin/login', middleware.controllers.admin.adminLogin);
+	server.post('/a/admin/logout', middleware.controllers.admin.adminLogout);
+	server.post('/a/admin/:id', middleware.controllers.admin.adminInfo);
 
-	server.get('/a/app/:id', middleware.controllers.admin.listApps);
-	server.post('/a/app/:id', middleware.controllers.admin.createApp);
+	server.post('/a/upload', middleware.controllers.file.upload);
+
+	server.get('/a/app', middleware.controllers.admin.listApps);
+	server.get('/a/app/:id', middleware.controllers.admin.getApp);
+	//server.post('/a/app', middleware.controllers.admin.createApp);
 	server.put('/a/app/:id', middleware.controllers.admin.modifyApp);
 	server.del('/a/app/:id', middleware.controllers.admin.deleteApp);
 
-	server.get('/a/data/ruler/:id', middleware.controllers.admin.listAppDataRule);
-	server.post('/a/data/ruler/:id', middleware.controllers.admin.createAppDataRule);
-	server.put('/a/data/ruler/:id', middleware.controllers.admin.modifyAppDataRule);
-	server.del('/a/data/ruler/:id', middleware.controllers.admin.deleteAppDataRule);	
+	server.get('/a/app/:appid/flowruler', middleware.controllers.admin.listAppFlowRule);
+	server.post('/a/app/:appid/flowruler', middleware.controllers.admin.createAppFlowRule);
+	server.put('/a/app/:appid/flowruler/:id', middleware.controllers.admin.modifyAppFlowRule);
+	server.del('/a/app/:appid/flowruler/:id', middleware.controllers.admin.deleteAppFlowRule);
 
-	server.get('/a/whitelist/:appid/:id', middleware.controllers.admin.listAppDataRule);
-	server.post('/a/whitelist/:appid/:id', middleware.controllers.admin.createAppDataRule);
-	server.put('/a/whitelist/:appid/:id', middleware.controllers.admin.modifyAppDataRule);
-	server.del('/a/whitelist/:appid/:id', middleware.controllers.admin.deleteAppDataRule);
+	server.get('/a/app/:appid/whitelist', middleware.controllers.admin.listAppWhiteList);
+	server.post('/a/app/:appid/whitelist', middleware.controllers.admin.createAppWhiteList);
+	server.put('/a/app/:appid/whitelist/:id', middleware.controllers.admin.debug);
+	server.del('/a/app/:appid/whitelist/:id', middleware.controllers.admin.debug);
 
 	server.get('/debug/:main', middleware.controllers.debug.main);
 

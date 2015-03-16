@@ -6,6 +6,8 @@ module.exports = function(db , cb){
 			app_name:String,
 			app_id:String,
 			app_key:String,
+			app_icon:String,
+			app_intro:String,
 			app_create_time:Number
 		},
 		{

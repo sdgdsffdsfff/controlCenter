@@ -1,5 +1,5 @@
 module.exports  = function Middleware(fn){
-	var _controllers =["sdkv1","admin","debug"];
+	var _controllers =["sdkv1","admin","file","debug"];
 	var _return = {};
 	_return.controllers ={};
 	for(var i in _controllers){

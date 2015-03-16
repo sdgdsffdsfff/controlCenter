@@ -3,12 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="4fdfc63c-defc-4705-9784-343a9af3944c" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/controllers/AdminControllers.js" afterPath="$PROJECT_DIR$/controllers/AdminControllers.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/models/Apps.js" afterPath="$PROJECT_DIR$/models/Apps.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/controllers/Sdkv1Controllers.js" afterPath="$PROJECT_DIR$/controllers/Sdkv1Controllers.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/fn.js" afterPath="$PROJECT_DIR$/fn.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/middleware.js" afterPath="$PROJECT_DIR$/middleware.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/routes.js" afterPath="$PROJECT_DIR$/routes.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="controlCenter.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -42,8 +36,8 @@
       <file leaf-file-name="AdminControllers.js" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/controllers/AdminControllers.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="2.9741936" vertical-offset="5064" max-vertical-offset="9522">
-              <caret line="435" column="30" selection-start-line="435" selection-start-column="30" selection-end-line="435" selection-end-column="30" />
+            <state vertical-scroll-proportion="-3.716129" vertical-offset="9684" max-vertical-offset="10656">
+              <caret line="346" column="43" selection-start-line="343" selection-start-column="0" selection-end-line="405" selection-end-column="11" />
               <folding />
             </state>
           </provider>
@@ -619,12 +613,12 @@
       <workItem from="1426311969682" duration="1934000" />
       <workItem from="1426408269995" duration="2488000" />
       <workItem from="1426466583071" duration="8869000" />
-      <workItem from="1426490057426" duration="4254000" />
+      <workItem from="1426490057426" duration="5885000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="177135000" />
+    <option name="totallyTimeSpent" value="178766000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="1411" y="-4" width="1875" height="1084" extended-state="6" />
@@ -1011,6 +1005,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="930">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
         </state>
       </provider>
     </entry>
@@ -1096,8 +1091,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/controllers/AdminControllers.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="2.9741936" vertical-offset="5064" max-vertical-offset="9522">
-          <caret line="435" column="30" selection-start-line="435" selection-start-column="30" selection-end-line="435" selection-end-column="30" />
+        <state vertical-scroll-proportion="-3.716129" vertical-offset="9684" max-vertical-offset="10656">
+          <caret line="346" column="43" selection-start-line="343" selection-start-column="0" selection-end-line="405" selection-end-column="11" />
           <folding />
         </state>
       </provider>

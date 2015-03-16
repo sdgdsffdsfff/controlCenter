@@ -315,7 +315,6 @@ module.exports  = function AdminControllers(fn){
 									for(var i in arr){
 										temp[arr[i]] = parseInt(temp[arr[i]]);
 									}
-									console.log(temp);
 									var res_obj ={
 										status:{
 											code : 0,
@@ -371,23 +370,28 @@ module.exports  = function AdminControllers(fn){
 								},
 								{},
 								["id"],
-								function (v1) {
-									fn.orm.update(
-										'App_data_rule',
-										{
-											id:req.params.id
-										},
-										{},
-										[{
-											'app_dr_amount':parseInt(req.body.newuseramout)*1024*1024,
-											'app_dr_duration':req.body.newuservalidity
-										}],
-										["app_dr_amount","app_dr_duration"],
-										function(){
-											res.send(200);
-											return next();
-										}
-									)
+								function (v2) {
+									if(undefined !== v2){
+										fn.orm.update(
+											'App_data_rule',
+											{
+												id:req.params.id
+											},
+											{},
+											[{
+												'app_dr_amount':parseInt(req.body.newuseramout)*1024*1024,
+												'app_dr_duration':req.body.newuservalidity
+											}],
+											["app_dr_amount","app_dr_duration"],
+											function(){
+												res.send(200);
+												return next();
+											}
+										)
+									}else{
+										res.send(401);
+										return next();
+									}
 								});
 						}else{
 							res.send(401);
@@ -501,18 +505,77 @@ module.exports  = function AdminControllers(fn){
 			}
 		});
 	};
-	_admin.createAppWhiteList = function(req,res,next){
+	_admin.createAppWhiteList = function(req,res,next) {
+		res.setHeader('content-type', 'application/json');
+		var app_id = req.params.appid;
+		if ("undefined" === typeof(app_id)) {
+			res.send(500);
+			return next();
+		}
+		;
+		_admin.testAdmin(req.authorization.credentials, function (r) {
+			if (r !== false) {
+				var customer_id = r;
+				fn.orm.get(
+					'Apps',
+					{
+						'id':app_id,
+						'app_customer_id':customer_id
 
+					},
+					{},
+					["id"],
+					function(v1){
+						if(undefined !== v1){
+							fn.orm.create(
+								'Domain_whitelist',
+								{
+									'id':'id',
+									'appid':'dw_app_id',
+									'pattern':'dw_ruler',
+									'create':'dw_create_time'
+								},
+								[{
+									'id':null,
+									'appid':app_id,
+									'pattern':req.body.pattern,
+									'create':fn.date.now()
+								}],
+								function(v){
+									var temp = v[0] || {};
+									var res_obj ={
+										status:{
+											code : 0,
+											msg: null
+										},
+										data:temp
+									}
+									res.send(200,res_obj);
+									return next();
+								}
+							)
+						}else {
+							res.send(401);
+							return next();
+						}
+					}
+				)
+
+			}else{
+				res.send(401);
+				return next();
+			}
+		});
 	};
 	_admin.modifyAppWhiteList = function(req,res,next){
-
+		res.setHeader('content-type', 'application/json');
 	};	
 	_admin.deleteAppWhiteList = function(req,res,next){
-
+		res.setHeader('content-type', 'application/json');
 	};
 	/************/
 	_admin.AppDataUsage = function(req,res,next){
-
+		res.setHeader('content-type', 'application/json');
 	};
 	/************/
 	_admin.downloadSdk = function(req,res,next){

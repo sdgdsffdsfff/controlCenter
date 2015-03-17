@@ -64,6 +64,31 @@ module.exports  = function AdminControllers(fn){
 	_admin.adminInfo = function(req,res,next){
 
 	};
+
+	_admin.appAuth = function(app_id,customer_id,cb){
+		fn.orm.get(
+			'Apps',
+			{
+				'id':app_id,
+				'app_customer_id':customer_id
+
+			},
+			{},
+			["id"],
+			function(v){
+				if(undefined !== v){
+					return cb(true);
+				}else{
+					return cb(false);
+				}
+			}
+		)
+	}
+
+
+
+
+
 	/***********/
 	_admin.listApps = function(req,res,next){
 		res.setHeader('content-type', 'application/json');
@@ -145,9 +170,9 @@ module.exports  = function AdminControllers(fn){
 										'app_customer_id':customer_id,
 										'app_is_disabled':0,
 										'app_name':req.params.name,
-										'app_id':fn.string.getRandom(48),
-										'app_key':fn.string.getRandom(48),
-										'app_icon':'/images/defaulticon.png',
+										'app_id':fn.string.getRandom(32),
+										'app_key':fn.string.getRandom(32),
+										'app_icon':null,
 										'app_intro':null,
 										'app_create_time':fn.date.now()
 									}],
@@ -175,35 +200,25 @@ module.exports  = function AdminControllers(fn){
 		_admin.testAdmin(req.authorization.credentials,function(r) {
 			if ( r!== false) {
 				var customer_id = r;
-				fn.orm.get(
+				var _data = req.body;
+				fn.orm.update(
 					'Apps',
 					{
-						'id': app_id,
+						'id':req.params.id,
 						'app_customer_id': customer_id
-
 					},
 					{},
-					["id"],
-					function (v1) {
-						var _data = req.body;
-						fn.orm.update(
-							'Apps',
-							{
-								id:req.params.id
-							},
-							{},
-							[{
-								'app_name':_data.name,
-								'app_icon':_data.icon,
-								'app_intro':_data.intro
-							}],
-							["app_name","app_icon","app_intro"],
-							function(){
-								res.send(200);
-								return next();
-							}
-						)
-					});
+					[{
+						'app_name':_data.name,
+						'app_icon':_data.icon,
+						'app_intro':_data.intro
+					}],
+					["app_name","app_icon","app_intro"],
+					function(){
+						res.send(200);
+						return next();
+					}
+				)
 			}else{
 				res.send(401);
 				return next();
@@ -221,51 +236,43 @@ module.exports  = function AdminControllers(fn){
 			res.send(500);
 			return next();
 		}
-		_admin.testAdmin(req.authorization.credentials,function(r) {
-			if ( r!== false) {
-				var customer_id = r;
-				fn.orm.get(
-					'Apps',
-					{
-						'id':app_id,
-						'app_customer_id':customer_id
-
-					},
-					{},
-					["id"],
-					function(v1){
-						if(undefined !== v1){
-							fn.orm.get(
-								'App_data_rule',
-								{
-									'app_id':app_id
-								},
-								{
-									'id':'id',
-									'app_id':'appid',
-									'app_dr_amount':'amount',
-									'app_dr_duration':'duration',
-									'app_dr_create_time':'create'
-								},
-								["id","app_id","app_dr_amount","app_dr_duration","app_dr_create_time"],
-								function(v2){
-									var res_obj ={
-										status:{
-											code : 0,
-											msg: null
-										},
-										data:v2
-									}
-									res.send(200,res_obj);
-									return next();
+		_admin.testAdmin(req.authorization.credentials,function(customer_id) {
+			if ( customer_id !== false) {
+				_admin.appAuth(app_id,customer_id,function(t){
+					if(t){
+						fn.orm.get(
+							'App_data_rule',
+							{
+								'app_id':app_id
+							},
+							{
+								'id':'id',
+								'app_id':'appid',
+								'app_dr_amount':'amount',
+								'app_dr_duration':'duration',
+								'app_dr_create_time':'create'
+							},
+							["id","app_id","app_dr_amount","app_dr_duration","app_dr_create_time"],
+							function(v2){
+								var res_obj ={
+									status:{
+										code : 0,
+										msg: null
+									},
+									data:v2
 								}
-							)
-						}else {
-							res.send(401);
-							return next();
-						}
+								res.send(200,res_obj);
+								return next();
+							}
+						)
+					}else {
+						res.send(401);
+						return next();
 					}
-				)
+				});
+			}else{
+				res.send(401);
+				return next();
 			}
 		});
 	};
@@ -276,69 +283,57 @@ module.exports  = function AdminControllers(fn){
 			res.send(500);
 			return next();
 		};
-		_admin.testAdmin(req.authorization.credentials,function(r) {
-			if ( r!== false) {
-				var customer_id = r;
-				fn.orm.get(
-					'Apps',
-					{
-						'id':app_id,
-						'app_customer_id':customer_id
 
-					},
-					{},
-					["id"],
-					function(v1){
-						if(undefined !== v1){
-							fn.orm.create(
-								'App_data_rule',
-								{
-									'id':'id',
-									'appid':'app_id',
-									'app_dr_type':'app_dr_type',
-									'amount':'app_dr_amount',
-									'duration':'app_dr_duration',
-									'create':'app_dr_create_time'
-								},
-								[{
-									'id':null,
-									'appid':app_id,
-									'app_dr_type':0,
-									'amount':parseInt(req.body.newuseramout)*1024*1024,
-									'duration':req.body.newuservalidity,
-									'create':fn.date.now()
-								}],
-								function(v){
-									var temp = v[0] || {};
-									delete temp.app_dr_type;
-									var arr = ["id","appid","amount"];
-									for(var i in arr){
-										temp[arr[i]] = parseInt(temp[arr[i]]);
-									}
-									var res_obj ={
-										status:{
-											code : 0,
-											msg: null
-										},
-										data:temp
-									}
-									res.send(200,res_obj);
-									return next();
+		_admin.testAdmin(req.authorization.credentials,function(customer_id) {
+			if ( customer_id !== false) {
+				_admin.appAuth(app_id, customer_id, function (t) {
+					if (t) {
+						fn.orm.create(
+							'App_data_rule',
+							{
+								'id':'id',
+								'appid':'app_id',
+								'app_dr_type':'app_dr_type',
+								'amount':'app_dr_amount',
+								'duration':'app_dr_duration',
+								'create':'app_dr_create_time'
+							},
+							[{
+								'id':null,
+								'appid':app_id,
+								'app_dr_type':0,
+								'amount':parseInt(req.body.newuseramout)*1024*1024,
+								'duration':req.body.newuservalidity,
+								'create':fn.date.now()
+							}],
+							function(v){
+								var temp = v[0] || {};
+								delete temp.app_dr_type;
+								var arr = ["id","appid","amount"];
+								for(var i in arr){
+									temp[arr[i]] = parseInt(temp[arr[i]]);
 								}
-							)
-						}else {
-							res.send(401);
-							return next();
-						}
+								var res_obj ={
+									status:{
+										code : 0,
+										msg: null
+									},
+									data:temp
+								}
+								res.send(200,res_obj);
+								return next();
+							}
+						)
+					} else {
+						res.send(401);
+						return next();
 					}
-				)
+				});
 			}else{
 				res.send(401);
 				return next();
 			}
 		});
-
-
 	};
 	_admin.modifyAppFlowRule = function(req,res,next){
 		res.setHeader('content-type', 'application/json');
@@ -348,58 +343,33 @@ module.exports  = function AdminControllers(fn){
 			res.send(500);
 			return next();
 		};
-		_admin.testAdmin(req.authorization.credentials,function(r) {
-			if (r !== false) {
-				var customer_id = r;
-				fn.orm.get(
-					'Apps',
-					{
-						'id':app_id,
-						'app_customer_id':customer_id
-
-					},
-					{},
-					["id"],
-					function(v1) {
-						if (undefined !== v1) {
-							fn.orm.get(
-								'App_data_rule',
-								{
-									'id': id,
-									'app_id':app_id
-								},
-								{},
-								["id"],
-								function (v2) {
-									if(undefined !== v2){
-										fn.orm.update(
-											'App_data_rule',
-											{
-												id:req.params.id
-											},
-											{},
-											[{
-												'app_dr_amount':parseInt(req.body.newuseramout)*1024*1024,
-												'app_dr_duration':req.body.newuservalidity
-											}],
-											["app_dr_amount","app_dr_duration"],
-											function(){
-												res.send(200);
-												return next();
-											}
-										)
-									}else{
-										res.send(401);
-										return next();
-									}
-								});
-						}else{
-							res.send(401);
-							return next();
-						}
+		_admin.testAdmin(req.authorization.credentials,function(customer_id) {
+			if ( customer_id !== false) {
+				_admin.appAuth(app_id, customer_id, function (t) {
+					if (t) {
+						fn.orm.update(
+							'App_data_rule',
+							{
+								'id':req.params.id,
+								'app_id':app_id
+							},
+							{},
+							[{
+								'app_dr_amount':parseInt(req.body.newuseramout)*1024*1024,
+								'app_dr_duration':req.body.newuservalidity
+							}],
+							["app_dr_amount","app_dr_duration"],
+							function(){
+								res.send(200);
+								return next();
+							}
+						)
+					} else {
+						res.send(401);
+						return next();
 					}
-				);
-			}else {
+				});
+			}else{
 				res.send(401);
 				return next();
 			}
@@ -413,38 +383,27 @@ module.exports  = function AdminControllers(fn){
 			res.send(500);
 			return next();
 		};
-		_admin.testAdmin(req.authorization.credentials,function(r) {
-			if (r !== false) {
-				var customer_id = r;
-				fn.orm.get(
-					'Apps',
-					{
-						'id':app_id,
-						'app_customer_id':customer_id
-
-					},
-					{},
-					["id"],
-					function(v1) {
-						if (undefined !== v1) {
-							fn.orm.delete(
-								'App_data_rule',
-								{
-									'id': id,
-									'app_id':app_id
-								},
-								function(){
-									res.send(200);
-									return next();
-								}
-							);
-						}else{
-							res.send(401);
-							return next();
-						}
+		_admin.testAdmin(req.authorization.credentials,function(customer_id) {
+			if ( customer_id !== false) {
+				_admin.appAuth(app_id, customer_id, function (t) {
+					if (t) {
+						fn.orm.delete(
+							'App_data_rule',
+							{
+								'id': id,
+								'app_id':app_id
+							},
+							function(){
+								res.send(200);
+								return next();
+							}
+						);
+					} else {
+						res.send(401);
+						return next();
 					}
-				);
-			}else {
+				});
+			}else{
 				res.send(401);
 				return next();
 			}
@@ -458,52 +417,46 @@ module.exports  = function AdminControllers(fn){
 			res.send(500);
 			return next();
 		}
-		_admin.testAdmin(req.authorization.credentials,function(r) {
-			if ( r!== false) {
-				var customer_id = r;
-				fn.orm.get(
-					'Apps',
-					{
-						'id':app_id,
-						'app_customer_id':customer_id
+		_admin.testAdmin(req.authorization.credentials,function(customer_id) {
+			if ( customer_id !== false) {
+				_admin.appAuth(app_id, customer_id, function (t) {
+					if (t) {
+						fn.orm.get(
+							'Domain_whitelist',
+							{
+								'dw_app_id':app_id
+							},
+							{
+								'id':'id',
+								'dw_app_id':'appid',
+								'dw_ruler':'ruler',
+								'dw_create_time':'create'
 
-					},
-					{},
-					["id"],
-					function(v1){
-						if(undefined !== v1){
-							fn.orm.get(
-								'Domain_whitelist',
-								{
-									'dw_app_id':app_id
-								},
-								{
-									'dw_app_id':'id',
-									'dw_ruler':'ruler',
-									'dw_create_time':'create'
-
-								},
-								["dw_app_id","dw_ruler","dw_create_time"],
-								function(v2){
-									var res_obj ={
-										status:{
-											code : 0,
-											msg: null
-										},
-										data:v2
-									}
-									res.send(200,res_obj);
-									return next();
+							},
+							["id","dw_app_id","dw_ruler","dw_create_time"],
+							function(v2){
+								var res_obj ={
+									status:{
+										code : 0,
+										msg: null
+									},
+									data:v2
 								}
-							)
-						}else {
-							res.send(401);
-							return next();
-						}
+								res.send(200,res_obj);
+								return next();
+							}
+						)
+					} else {
+						res.send(401);
+						return next();
 					}
-				)
+				});
+			}else{
+				res.send(401);
+				return next();
 			}
 		});
+
 	};
 	_admin.createAppWhiteList = function(req,res,next) {
 		res.setHeader('content-type', 'application/json');
@@ -513,54 +466,42 @@ module.exports  = function AdminControllers(fn){
 			return next();
 		}
 		;
-		_admin.testAdmin(req.authorization.credentials, function (r) {
-			if (r !== false) {
-				var customer_id = r;
-				fn.orm.get(
-					'Apps',
-					{
-						'id':app_id,
-						'app_customer_id':customer_id
-
-					},
-					{},
-					["id"],
-					function(v1){
-						if(undefined !== v1){
-							fn.orm.create(
-								'Domain_whitelist',
-								{
-									'id':'id',
-									'appid':'dw_app_id',
-									'pattern':'dw_ruler',
-									'create':'dw_create_time'
-								},
-								[{
-									'id':null,
-									'appid':app_id,
-									'pattern':req.body.pattern,
-									'create':fn.date.now()
-								}],
-								function(v){
-									var temp = v[0] || {};
-									var res_obj ={
-										status:{
-											code : 0,
-											msg: null
-										},
-										data:temp
-									}
-									res.send(200,res_obj);
-									return next();
+		_admin.testAdmin(req.authorization.credentials,function(customer_id) {
+			if ( customer_id !== false) {
+				_admin.appAuth(app_id, customer_id, function (t) {
+					if (t) {
+						fn.orm.create(
+							'Domain_whitelist',
+							{
+								'id':'id',
+								'appid':'dw_app_id',
+								'pattern':'dw_ruler',
+								'create':'dw_create_time'
+							},
+							[{
+								'id':null,
+								'appid':app_id,
+								'pattern':req.body.pattern,
+								'create':fn.date.now()
+							}],
+							function(v){
+								var temp = v[0] || {};
+								var res_obj ={
+									status:{
+										code : 0,
+										msg: null
+									},
+									data:temp
 								}
-							)
-						}else {
-							res.send(401);
-							return next();
-						}
+								res.send(200,res_obj);
+								return next();
+							}
+						)
+					} else {
+						res.send(401);
+						return next();
 					}
-				)
-
+				});
 			}else{
 				res.send(401);
 				return next();
@@ -569,9 +510,76 @@ module.exports  = function AdminControllers(fn){
 	};
 	_admin.modifyAppWhiteList = function(req,res,next){
 		res.setHeader('content-type', 'application/json');
+		var id = req.params.id;
+		var app_id = req.params.appid;
+		if("undefined" === typeof(app_id)){
+			res.send(500);
+			return next();
+		};
+		_admin.testAdmin(req.authorization.credentials,function(customer_id) {
+			if ( customer_id !== false) {
+				_admin.appAuth(app_id, customer_id, function (t) {
+					if (t) {
+						fn.orm.update(
+							'Domain_whitelist',
+							{
+								'id':id,
+								'dw_app_id': app_id
+							},
+							{},
+							[{
+								'dw_ruler':req.body.pattern
+							}],
+							["dw_ruler"],
+							function () {
+								res.send(200);
+								return next();
+							}
+						)
+					} else {
+						res.send(401);
+						return next();
+					}
+				});
+			}else{
+				res.send(401);
+				return next();
+			}
+		});
 	};	
 	_admin.deleteAppWhiteList = function(req,res,next){
 		res.setHeader('content-type', 'application/json');
+		var id = req.params.id;
+		var app_id = req.params.appid;
+		if("undefined" === typeof(app_id)){
+			res.send(500);
+			return next();
+		};
+		_admin.testAdmin(req.authorization.credentials,function(customer_id) {
+			if ( customer_id !== false) {
+				_admin.appAuth(app_id, customer_id, function (t) {
+					if (t) {
+						fn.orm.delete(
+							'Domain_whitelist',
+							{
+								'id':id,
+								'dw_app_id': app_id
+							},
+							function(){
+								res.send(200);
+								return next();
+							}
+						);
+					} else {
+						res.send(401);
+						return next();
+					}
+				});
+			}else{
+				res.send(401);
+				return next();
+			}
+		});
 	};
 	/************/
 	_admin.AppDataUsage = function(req,res,next){

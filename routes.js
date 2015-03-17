@@ -46,8 +46,8 @@ module.exports = function (middleware){
 
 	server.get('/a/app/:appid/whitelist', middleware.controllers.admin.listAppWhiteList);
 	server.post('/a/app/:appid/whitelist', middleware.controllers.admin.createAppWhiteList);
-	server.put('/a/app/:appid/whitelist/:id', middleware.controllers.admin.debug);
-	server.del('/a/app/:appid/whitelist/:id', middleware.controllers.admin.debug);
+	server.put('/a/app/:appid/whitelist/:id', middleware.controllers.admin.modifyAppWhiteList);
+	server.del('/a/app/:appid/whitelist/:id', middleware.controllers.admin.deleteAppWhiteList);
 
 	server.get('/debug/:main', middleware.controllers.debug.main);
 

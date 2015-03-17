@@ -61,10 +61,6 @@ module.exports  = function Sdkv1Controllers(fn){
 
 	};
 
-	var _getWhiteList = function(cb){
-		cb("");
-	};
-
 	var _createNewDataRecord = function(type,userid,appid,amount,timestart,timeend,cb){
 
 		if(false === type){
@@ -143,32 +139,53 @@ module.exports  = function Sdkv1Controllers(fn){
 		});
 	};
 
-	var _getAvailableData = function(userid,appid,token,cb){
-		_getOneDataRecord(1,userid,appid,function(d){
-			if(fn.tester.emptyObject(d)){
-				_getOneDataRecord(0,userid,null,function(d){
-					if(fn.tester.emptyObject(d)){
-						cb();
+	var _getWhiteList = function(app_id,cb){
+		fn.loadModel(['Domain_whitelist'],function(m){
+			m.Domain_whitelist.find({
+					dw_app_id:app_id
+				})
+				.only("dw_ruler")
+				.run(function(err,ruler_data){
+					if("undefined" === typeof(ruler_data[0])){
+						cb(null);
 					}else{
-						_setUserDataToRedis(userid,d,1,token)
+						cb(ruler_data[0]["dw_ruler"]);
 					}
 				});
-			}else{
-				_setUserDataToRedis(userid,d,1,token)
-				cb()
-			}
-		})
+			;
+		});
 	};
-	var _setUserDataToRedis = function(user_id,v,type,req_token){
+
+	var _getAvailableData = function(id,userid,appid,token,cb){
+		_getWhiteList(appid,function(w){
+			_getOneDataRecord(1,id,appid,function(d){
+				if(fn.tester.emptyObject(d)){
+					_getOneDataRecord(0,id,null,function(d){
+						if(fn.tester.emptyObject(d)){
+							cb();
+						}else{
+							_setUserDataToRedis(userid+'_'+appid,d,w,1,token);
+							cb();
+						}
+					});
+				}else{
+					_setUserDataToRedis(userid+'_'+appid,d,w,1,token)
+					cb()
+				}
+			});
+		});
+	};
+	var _setUserDataToRedis = function(id,v,w,type,req_token){
 		var _r ={
 			"index_id": v.id,
 			"user_id": v.data_user_id,
 			"data_total": v.data_data_total,
 			"data_left": v.data_data_total - v.data_data_usage,
 			"data_type":type,
-			"request_token":req_token
+			"request_token":req_token,
+			"whitelist_pattern":w
 		}
-		new fn.redis.hmset(_static_key.user_data+user_id,_r).expire(v.data_time_end - fn.date.now());
+		new fn.redis.hmset(_static_key.user_data+id,_r).expire(v.data_time_end - fn.date.now());
 	};
 
 	_sdk={
@@ -274,9 +291,6 @@ module.exports  = function Sdkv1Controllers(fn){
 					return next();
 				}
 				fn.redis.hgetall(_static_key.app_token+_app_token,function(app){
-
-					app.new_user = JSON.parse(app.new_user);
-
 					if(false === app){
 						res.send(500,_error_status(500));
 						return next();
@@ -285,6 +299,7 @@ module.exports  = function Sdkv1Controllers(fn){
 							res.send(400,_error_status(106));
 							return next();
 						}
+						app.new_user = JSON.parse(app.new_user);
 						var _req_token = fn.string.getRandom(64);
 						var  _res_obj ={
 							"request_token":_req_token,
@@ -311,7 +326,7 @@ module.exports  = function Sdkv1Controllers(fn){
 								"user_card_imsi":_user_data.phone_imsi
 							})
 								.limit(1)
-								.only("id","user_is_disabled")
+								.only("id","user_id","user_is_disabled")
 								.run(function (err, user) {
 									if("undefined" === typeof(user[0])){
 										var _time = fn.date.now();
@@ -381,7 +396,7 @@ module.exports  = function Sdkv1Controllers(fn){
 											});
 										});
 									}else{
-										var _key = _static_key.user_data+ user[0].user_id;
+										var _key = _static_key.user_data+ user[0].user_id+'_'+app.app_id;
 										fn.redis.ttl(_key,function(ttl){
 											if(false === ttl){
 												res.send(500,_error_status(500));
@@ -396,16 +411,21 @@ module.exports  = function Sdkv1Controllers(fn){
 														fn.redis.del(_static_key.request_token+ k.request_token,function(){ // remove the old key
 															new fn.redis.hmset(_static_key.request_token+_req_token,{
 																"index_id":user[0].id,
-																"user_id":user[0].user_id
+																"user_id":user[0].user_id,
+																"app_id":app.app_id
 															}).expire(_key_time.b);
-															fn.hset(_key,"request_token",_req_token);
 															res.send(200,_res_obj);
 															return next();
 														})
 													}
 												});
 											}else{
-												_getAvailableData(user[0].user_id,app.app_id,_req_token,function(){
+												_getAvailableData(user[0].id,user[0].user_id,app.app_id,_req_token,function(){
+													new fn.redis.hmset(_static_key.request_token+_req_token,{
+														"index_id":user[0].id,
+														"user_id":user[0].user_id,
+														"app_id":app.app_id
+													}).expire(_key_time.b);
 													res.send(200,_res_obj);
 													return next();
 												});

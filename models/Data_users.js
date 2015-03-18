@@ -2,6 +2,7 @@ module.exports = function(db , cb){
 	db.define('data_users',{
 		id:Number,
 		data_user_id:Number,
+		data_app_id:Number,
 		data_time_start:Number,
 		data_time_end:Number,
 		data_data_total:Number,

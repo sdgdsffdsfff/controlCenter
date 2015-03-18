@@ -1,3 +1,4 @@
+var http = require('http');
 module.exports  = function Sdkv1Controllers(fn){
 	var _sdk  = {} ;
 
@@ -157,33 +158,30 @@ module.exports  = function Sdkv1Controllers(fn){
 	};
 
 	var _getAvailableData = function(id,userid,appid,token,cb){
-		_getWhiteList(appid,function(w){
 			_getOneDataRecord(1,id,appid,function(d){
 				if(fn.tester.emptyObject(d)){
 					_getOneDataRecord(0,id,null,function(d){
 						if(fn.tester.emptyObject(d)){
 							cb();
 						}else{
-							_setUserDataToRedis(userid+'_'+appid,d,w,1,token);
+							_setUserDataToRedis(userid+'_'+appid,d,1,token);
 							cb();
 						}
 					});
 				}else{
-					_setUserDataToRedis(userid+'_'+appid,d,w,1,token)
+					_setUserDataToRedis(userid+'_'+appid,d,1,token)
 					cb()
 				}
 			});
-		});
 	};
-	var _setUserDataToRedis = function(id,v,w,type,req_token){
+	var _setUserDataToRedis = function(id,v,type,req_token){
 		var _r ={
 			"index_id": v.id,
 			"user_id": v.data_user_id,
 			"data_total": v.data_data_total,
 			"data_left": v.data_data_total - v.data_data_usage,
 			"data_type":type,
-			"request_token":req_token,
-			"whitelist_pattern":w
+			"request_token":req_token
 		}
 		new fn.redis.hmset(_static_key.user_data+id,_r).expire(v.data_time_end - fn.date.now());
 	};
@@ -353,42 +351,43 @@ module.exports  = function Sdkv1Controllers(fn){
 												 _types=false;
 											}
 											if(null !== _nc && 0 !== _nc.amount){
-												_typec=0;
+												_typec=1;
 											}else{
 												_typec=false;
 											}
 											_createNewDataRecord(_types,_user_id,null,_ns.amount,_time,_time+_ns.duration,function(s_id){
 												_createNewDataRecord(_typec,_user_id,app.app_id,_nc.amount,_time,_time+_nc.duration,function(c_id){
-													_getWhiteList(function(witelist){
-														if(null !== c_id || null !==s_id){
-															var _r;
-															if(null !== s_id){
-																_r ={
-																	"index_id":s_id,
-																	"user_id":_user_id,
-																	"data_total":_ns.amount,
-																	"data_left":_ns.amount,
-																	"data_type":0,
-																	"request_token":_req_token
-																}
+													if(null !== c_id || null !==s_id){
+														var _r;
+														if(null !== s_id){
+															_r ={
+																"index_id":s_id,
+																"user_id":_user_id,
+																"data_total":_ns.amount,
+																"data_left":_ns.amount,
+																"data_type":0,
+																"request_token":_req_token
 															}
-															if(null !== c_id){
-																_r ={
-																	"index_id":c_id,
-																	"user_id":_user_id,
-																	"data_total":_nc.amount,
-																	"data_left":_nc.amount,
-																	"data_type":1,
-																	"request_token":_req_token
-																}
-															}
-															new fn.redis.hmset(_static_key.user_data+_new_user_id,_r).expire(_ns.duration);
 														}
+														if(null !== c_id){
+															_r ={
+																"index_id":c_id,
+																"user_id":_user_id,
+																"data_total":_nc.amount,
+																"data_left":_nc.amount,
+																"data_type":1,
+																"request_token":_req_token
+															}
+														}
+														new fn.redis.hmset(_static_key.user_data+_new_user_id+'_'+app.app_id,_r).expire(_ns.duration);
+													}
+													_getWhiteList(app.app_id,function(witelist){
 														new fn.redis.hmset(_static_key.request_token+_req_token,{
 															"index_id":item_a[0].id,
-															"user_id":_new_user_id
+															"user_id":_new_user_id,
+															"app_id":app.app_id,
+															"whitelist_pattern":witelist
 														}).expire(_key_time.b);
-
 														res.send(200,_res_obj);
 														return next();
 													});
@@ -409,25 +408,31 @@ module.exports  = function Sdkv1Controllers(fn){
 														return next();
 													}else{
 														fn.redis.del(_static_key.request_token+ k.request_token,function(){ // remove the old key
-															new fn.redis.hmset(_static_key.request_token+_req_token,{
-																"index_id":user[0].id,
-																"user_id":user[0].user_id,
-																"app_id":app.app_id
-															}).expire(_key_time.b);
-															res.send(200,_res_obj);
-															return next();
+															_getWhiteList(app.app_id,function(witelist){
+																new fn.redis.hmset(_static_key.request_token+_req_token,{
+																	"index_id":user[0].id,
+																	"user_id":user[0].user_id,
+																	"app_id":app.app_id,
+																	"whitelist_pattern":witelist
+																}).expire(_key_time.b);
+																res.send(200,_res_obj);
+																return next();
+															});
 														})
 													}
 												});
 											}else{
 												_getAvailableData(user[0].id,user[0].user_id,app.app_id,_req_token,function(){
-													new fn.redis.hmset(_static_key.request_token+_req_token,{
-														"index_id":user[0].id,
-														"user_id":user[0].user_id,
-														"app_id":app.app_id
-													}).expire(_key_time.b);
-													res.send(200,_res_obj);
-													return next();
+													_getWhiteList(app.app_id,function(witelist){
+														new fn.redis.hmset(_static_key.request_token+_req_token,{
+															"index_id":user[0].id,
+															"user_id":user[0].user_id,
+															"app_id":app.app_id,
+															"whitelist_pattern":witelist
+														}).expire(_key_time.b);
+														res.send(200,_res_obj);
+														return next();
+													});
 												});
 											}
 										});
@@ -451,7 +456,7 @@ module.exports  = function Sdkv1Controllers(fn){
 					return next();
 				}else{
 					fn.redis.hgetall(_static_key.request_token+_req_token,function(r){
-						fn.redis.hgetall(_static_key.user_data+ r.user_id,function(d) {
+						fn.redis.hgetall(_static_key.user_data+ r.user_id+'_'+ r.app_id,function(d) {
 							if(null == d){
 								_res_obj = {
 									"available_flow":0,
@@ -472,12 +477,37 @@ module.exports  = function Sdkv1Controllers(fn){
 		},
 		checkHealth:function(req,res,next){
 			res.setHeader('content-type', 'application/json');
-			_res_obj = {
-				"available_flow": parseInt(d.data_left),
-				"expire":t
+
+			var _res_obj = {
+				"status":null,
+			    "interval":60
 			};
-			res.send(200,_res_obj);
-			return next();
+			var _servers =[
+				"10.1.1.100"
+			];
+			if(!fn.array.inArray(req.params.server,_servers)){
+				res.send(500);
+				return next();
+			}else{
+				var options = {
+					hostname: req.params.server,
+					port: 8080,
+					path: '/',
+					method: 'GET'
+				};
+				var _req = http.request(options, function (_res) {
+					_res_obj.status = 0 ;
+					res.send(200,_res_obj);
+					return next();
+				});
+				_req.on('error', function (e) {
+					//console.log('problem with request: ' + e.message);
+					_res_obj.status = 1 ;
+					res.send(200,_res_obj);
+					return next();
+				});
+				_req.end();
+			}
 		}
 	};
 	return _sdk;

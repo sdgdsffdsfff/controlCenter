@@ -32,6 +32,7 @@ module.exports  = function AdminControllers(fn){
 							fn.redis.setex( 'admin_token_'+_token,_expire,customer[0].id);
 							var res_obj ={
 								"data":{
+									"id":customer[0].id,
 									"token":  _token ,
 									"expire":_expire
 								}
@@ -65,6 +66,11 @@ module.exports  = function AdminControllers(fn){
 
 	};
 
+
+
+
+
+
 	_admin.appAuth = function(app_id,customer_id,cb){
 		fn.orm.get(
 			'Apps',
@@ -83,11 +89,49 @@ module.exports  = function AdminControllers(fn){
 				}
 			}
 		)
-	}
+	};
 
+	_admin.appsOview = function(req,res,next){
+		res.setHeader('content-type', 'application/json');
+		_admin.testAdmin(req.authorization.credentials,function(r) {
+			if (r !== false) {
+				var customer_id = r;
+				var _sql = 'SELECT COUNT(*) AS ?? FROM ?? WHERE ?? = ?';
+				var _param =['total','apps','app_customer_id',parseInt(customer_id)];
+				fn.runSql(
+					_sql,
+					_param,
+					function(count){
+						var res_obj ={
+							status:{
+								'code' : 0,
+								'msg': null
+							},
+							data:{
+								'app_count':count[0].total
+							}
+						}
+						res.send(200,res_obj);
+						return next();
+					}
+				)
 
+			}else{
+				res.send(401);
+				return next();
+			}
+		});
+	};
 
+	_admin.usersOview = function(req,res,next){
+		res.send(200);
+		return next();
+	};
 
+	_admin.messagesOview = function(req,res,next){
+		res.send(200);
+		return next();
+	};
 
 	/***********/
 	_admin.listApps = function(req,res,next){

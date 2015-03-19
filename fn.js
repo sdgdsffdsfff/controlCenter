@@ -255,6 +255,14 @@ module.exports = function  Fn(app){
 			return moment().endOf('month').unix();
 		},
 	};
+	_fn.remoteLog ={
+		get:function(){
+
+		},
+		parse :function(){
+
+		}
+	};
 	_fn.redis.hmset.prototype.expire = function(ttl){
 		client.expire(this.key,ttl);
 	}

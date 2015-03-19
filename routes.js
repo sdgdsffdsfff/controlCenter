@@ -49,7 +49,26 @@ module.exports = function (middleware){
 	server.put('/a/app/:appid/whitelist/:id', middleware.controllers.admin.modifyAppWhiteList);
 	server.del('/a/app/:appid/whitelist/:id', middleware.controllers.admin.deleteAppWhiteList);
 
+
+
+	server.get('/a/account/:id/overview/finance',middleware.controllers.finance.financeOview)
+	server.get('/a/account/:id/overview/apps',middleware.controllers.admin.appsOview)
+	server.get('/a/account/:id/overview/users',middleware.controllers.admin.usersOview)
+	server.get('/a/account/:id/overview/messages',middleware.controllers.admin.messagesOview)
+
+
+	server.get('/a/account/:id/logs/users',middleware.controllers.admin.debug)
+	server.get('/a/account/:id/logs/apps',middleware.controllers.admin.debug)
+
+
+
 	server.get('/debug/:main', middleware.controllers.debug.main);
+
+
+
+
+
+
 
 /********************************************************/
 	server.on('uncaughtException', function (req, res, route, err) {

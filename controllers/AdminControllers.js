@@ -96,20 +96,18 @@ module.exports  = function AdminControllers(fn){
 		_admin.testAdmin(req.authorization.credentials,function(r) {
 			if (r !== false) {
 				var customer_id = r;
-				var _sql = 'SELECT COUNT(*) AS ?? FROM ?? WHERE ?? = ?';
-				var _param =['total','apps','app_customer_id',parseInt(customer_id)];
+				var _sql = 'SELECT ??,?? FROM ?? WHERE ?? = ?';
+				var _param =['id','app_name','apps','app_customer_id',parseInt(customer_id)];
 				fn.runSql(
 					_sql,
 					_param,
-					function(count){
+					function(data){
 						var res_obj ={
 							status:{
 								'code' : 0,
 								'msg': null
 							},
-							data:{
-								'app_count':count[0].total
-							}
+							data:data
 						}
 						res.send(200,res_obj);
 						return next();
@@ -124,8 +122,33 @@ module.exports  = function AdminControllers(fn){
 	};
 
 	_admin.usersOview = function(req,res,next){
-		res.send(200);
-		return next();
+		res.setHeader('content-type', 'application/json');
+		_admin.testAdmin(req.authorization.credentials,function(r) {
+			if (r !== false) {
+				var customer_id = r;
+				var _sql = 'SELECT ??  AS ??,COUNT(DISTINCT ??) AS ?? FROM ?? WHERE ?? IN (SELECT ?? FROM ?? WHERE ?? = ? ) GROUP BY ??';
+				var _param =['data_app_id','app_id','data_user_id','total','data_users','data_app_id','id','apps','app_customer_id',parseInt(customer_id),'data_app_id'];
+				fn.runSql(
+					_sql,
+					_param,
+					function(data){
+						var res_obj ={
+							status:{
+								'code' : 0,
+								'msg': null
+							},
+							data:data
+						}
+						res.send(200,res_obj);
+						return next();
+					}
+				)
+
+			}else{
+				res.send(401);
+				return next();
+			}
+		});
 	};
 
 	_admin.messagesOview = function(req,res,next){

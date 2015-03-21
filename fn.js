@@ -195,9 +195,9 @@ module.exports = function  Fn(app){
 			this.key = key;
 			client.setex(this.key,expire,value);
 		},
-		hset:function(hash,key,field,value){
+		hset:function(key,field,value){
 			this.key = key;
-			client.hset(hash,this.key,field,value);
+			client.hset(this.key,field,value);
 		},
 		hmset:function(key,obj){
 			this.key = key;

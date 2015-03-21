@@ -407,6 +407,7 @@ module.exports  = function Sdkv1Controllers(fn){
 														res.send(500,_error_status(500));
 														return next();
 													}else{
+														console.log(_req_token);
 														fn.redis.del(_static_key.request_token+ k.request_token,function(){ // remove the old key
 															_getWhiteList(app.app_id,function(witelist){
 																new fn.redis.hmset(_static_key.request_token+_req_token,{
@@ -415,6 +416,7 @@ module.exports  = function Sdkv1Controllers(fn){
 																	"app_id":app.app_id,
 																	"whitelist_pattern":witelist
 																}).expire(_key_time.b);
+																fn.redis.hset(_key,'request_token',_req_token);
 																res.send(200,_res_obj);
 																return next();
 															});

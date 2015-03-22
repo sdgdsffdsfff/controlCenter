@@ -57,7 +57,7 @@ module.exports = function (middleware){
 	server.get('/a/account/:id/overview/messages',middleware.controllers.admin.messagesOview)
 
 
-	server.get('/a/account/:id/logs/users',middleware.controllers.admin.debug)
+	server.get('/a/account/:id/logs/users',middleware.controllers.log.users)
 	server.get('/a/account/:id/logs/apps',middleware.controllers.admin.debug)
 
 

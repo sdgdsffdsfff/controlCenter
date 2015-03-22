@@ -255,12 +255,22 @@ module.exports = function  Fn(app){
 			return moment().endOf('month').unix();
 		},
 	};
-	_fn.remoteLog ={
-		get:function(){
+	_fn.fetchRemote ={
+		get:function(url,cb){
 
 		},
-		parse :function(){
+		post:function(url,data,options,cb){
+			var data = data || "";
+			var options =options || {};
 
+			console.log(data,options);
+
+			needle.post(url, data, options, function(err, resp) {
+				console.log(err);
+
+
+				cb(resp);
+			});
 		}
 	};
 	_fn.redis.hmset.prototype.expire = function(ttl){

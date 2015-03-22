@@ -17,8 +17,9 @@ module.exports = function App(){
 		"redis_config":{
 			host :  "127.0.0.1",
 			port :  6379
-		}, 
+		},
+		"logstash":"http://115.238.145.51:59912/logstash-*/_search?pretty",
 		"port"  :  '4399',
-		"root_path"  : rootPath ,
+		"root_path"  : rootPath
 	}
 }

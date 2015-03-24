@@ -64,6 +64,9 @@ module.exports  = function AdminControllers(fn){
 
 	_admin.adminInfo = function(req,res,next){
 
+			console.log(req.body);
+
+
 	};
 
 

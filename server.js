@@ -1,8 +1,8 @@
 var App     = require("./app");
 var Routes  = require("./routes");
 var Fn  = require("./fn");
-var Middleware= require("./middleware");
+var Base= require("./base");
 var app     = new App();
 var fn = new Fn(app);
-var middleware = new Middleware(fn);
-new Routes(middleware);
+var base = new Base(fn);
+new Routes(base);

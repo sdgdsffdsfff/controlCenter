@@ -1,4 +1,4 @@
-module.exports  = function LogControllers(fn){
+module.exports  = function LogControllers(fn,base){
 
 	var _log  = {} ;
 	_log.post_data = {
@@ -120,20 +120,33 @@ module.exports  = function LogControllers(fn){
 		}
 	};
 	_log.users = function(req,res,next){
-		fn.fetchRemote.post(
-			fn.getConfig("logstash"),
-			_log.post_data.app_user,
-			{
-				headers: {
-					'Content-Type':"application/json;charset=utf-8"
-				},
-				json:true
-			},
-			function(resp){
-				res.send(200,resp.body);
-				return next();
+		base.testAdmin(req.authorization.credentials,function(r) {
+			if (r !== false) {
+				fn.fetchRemote.post(
+					fn.getConfig("logstash"),
+					_log.post_data.app_user,
+					{
+						headers: {
+							'Content-Type':"application/json;charset=utf-8"
+						},
+						json:true
+					},
+					function(resp){
+						var res_obj ={
+							status:{
+								'code' : 0,
+								'msg': null
+							},
+							data:resp.body
+						}
+						res.send(200, res_obj);
+						return next();
+					}
+				);
+			}else{
+				return base.sendError(res,{},next);
 			}
-		);
+		});
 	};
 	_log.apps = function(req,res,next){
 		fn.fetchRemote.post(
@@ -146,7 +159,14 @@ module.exports  = function LogControllers(fn){
 				json:true
 			},
 			function(resp){
-				res.send(200,resp.body);
+				var res_obj ={
+					status:{
+						'code' : 0,
+						'msg': null
+					},
+					data:resp.body
+				}
+				res.send(200, res_obj);
 				return next();
 			}
 		);

@@ -29,7 +29,7 @@ module.exports = function (middleware){
 
 	server.post('/a/admin/login', middleware.controllers.admin.adminLogin);
 	server.post('/a/admin/logout', middleware.controllers.admin.adminLogout);
-	server.post('/a/admin/:id', middleware.controllers.admin.adminInfo);
+	server.put('/a/admin/:id', middleware.controllers.admin.adminInfo);
 
 	server.post('/a/upload', middleware.controllers.file.upload);
 
@@ -57,17 +57,12 @@ module.exports = function (middleware){
 	server.get('/a/account/:id/overview/messages',middleware.controllers.admin.messagesOview)
 
 
-	server.get('/a/account/:id/logs/users',middleware.controllers.log.users)
-	server.get('/a/account/:id/logs/apps',middleware.controllers.admin.debug)
+	server.post('/a/account/:id/logs/users',middleware.controllers.log.users)
+	server.post('/a/account/:id/logs/apps',middleware.controllers.log.apps)
 
 
 
 	server.get('/debug/:main', middleware.controllers.debug.main);
-
-
-
-
-
 
 
 /********************************************************/
@@ -76,6 +71,6 @@ module.exports = function (middleware){
 	   // process.exit(1);
 	});
 	server.listen(middleware.getServerPort() , function () {
-		console.log('%s listening at %s', server.name, server.url);
+		console.log('%s listening at %s'.info, server.name, server.url);
 	});
 }

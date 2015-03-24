@@ -3,6 +3,22 @@ var redis    =  require("redis");
 var crypto = require("crypto");
 var needle = require('needle'); 
 var moment = require('moment');
+var colors = require('colors');
+
+colors.setTheme({
+	silly: 'rainbow',
+	input: 'grey',
+	verbose: 'cyan',
+	prompt: 'grey',
+	info: 'green',
+	data: 'grey',
+	help: 'cyan',
+	warn: 'yellow',
+	debug: 'blue',
+	error: 'red'
+});
+
+
 module.exports = function  Fn(app){
 	var _model = {};
 	var db = orm.connect(app.mysql_config, function (err, db) {
@@ -262,13 +278,8 @@ module.exports = function  Fn(app){
 		post:function(url,data,options,cb){
 			var data = data || "";
 			var options =options || {};
-
-			console.log(data,options);
-
 			needle.post(url, data, options, function(err, resp) {
-				console.log(err);
-
-
+				//console.log(err);
 				cb(resp);
 			});
 		}

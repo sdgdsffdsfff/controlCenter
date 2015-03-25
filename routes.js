@@ -29,7 +29,8 @@ module.exports = function (middleware){
 
 	server.post('/a/admin/login', middleware.controllers.admin.adminLogin);
 	server.post('/a/admin/logout', middleware.controllers.admin.adminLogout);
-	server.put('/a/admin/:id', middleware.controllers.admin.adminInfo);
+	server.get('/a/admin/:id', middleware.controllers.admin.getadminInfo);
+	server.put('/a/admin/:id', middleware.controllers.admin.updateadminInfo);
 
 	server.post('/a/upload', middleware.controllers.file.upload);
 

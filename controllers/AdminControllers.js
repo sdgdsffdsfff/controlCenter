@@ -1,4 +1,4 @@
-module.exports  = function AdminControllers(fn){
+module.exports  = function AdminControllers(fn,base){
 	var _admin = {};
 	_admin.testAdmin = function(credentials,callback){
 		fn.redis.get('admin_token_'+credentials,function(v){
@@ -61,10 +61,116 @@ module.exports  = function AdminControllers(fn){
 			}
 		})
 	};
+	_admin.getadminInfo = function(req,res,next){
+		base.testAdmin(req.authorization.credentials,function(r) {
+			if (r !== false) {
+				var customer_id = r;
+				if(req.params.id !== customer_id){
+					return base.sendError(res,401,{},next);
+				}else{
+					fn.orm.get(
+						'Customers_info',
+						{
+							'customer_id':customer_id
+						},
+						{
+							"id":"id",
+							"customer_name":"name",
+							"customer_phone":"phone",
+							"customer_company":"company",
+							"customer_address":"address",
+							"customer_title":"title",
+							"customer_website":"website",
+							"customer_notify_email":"notify_email",
+							"customer_notify_phone":"notify_phone"
+						},
+						[
+							"id",
+							"customer_name",
+							"customer_phone",
+							"customer_company",
+							"customer_address",
+							"customer_title",
+							"customer_website",
+							"customer_notify_email",
+							"customer_notify_phone"
+						],
+						function(v){
+							if(undefined !== v){
+								var res_obj ={
+									status:{
+										'code' : 0,
+										'msg': null
+									},
+									data:v
+								};
+								res.send(200,res_obj);
+								return next();
+							}else{
+								return base.sendError(res,404,{},next);
+							}
+						}
+					)
+				}
+			}else{
+				return base.sendError(res,401,{},next);
+			}
+		});
+	};
+	_admin.updateadminInfo = function(req,res,next){
+		base.testAdmin(req.authorization.credentials,function(r) {
+			if (r !== false) {
+				var customer_id = r;
+				var _arr = ["name","phone","company","address","title","website","notify_email","notify_phone"];
+				var _temp ={};
+				if("object"!==typeof(req.body)){
+					res.send(400);
+					return next();
+				};
+				for(var i in _arr){
+					if("undefined" !== typeof(req.body[_arr[i]])){
+						_temp[_arr[i]] = req.body[_arr[i]];
+					}
+				}
+				_temp.id = null == req.body.id?null:req.body.id;
+				fn.orm.update(
+					'Customers_info',
+					{
+						'customer_id':customer_id
+					},
+					{
+						"id":"id",
+						"name":"customer_name",
+						"phone":"customer_phone",
+						"company":"customer_company",
+						"address":"customer_address",
+						"title":"customer_title",
+						"website":"customer_website",
+						"notify_email":"customer_notify_email",
+						"notify_phone":"customer_notify_phone"
+					},
+					[_temp],
+					["name","phone","company","address","title","website","notify_email","notify_phone"],
+					true,
+					function(v){
+						var res_obj ={
+							status:{
+								'code' : 0,
+								'msg': null
+							},
+							data:null === _temp.id?(v.id || null):_temp.id
+						}
+						res.send(200,res_obj);
+						return next();
+					}
+				)
+			}else{
 
-	_admin.adminInfo = function(req,res,next){
+			}
+		})
 
-			console.log(req.body);
+
+
 
 
 	};
@@ -284,6 +390,7 @@ module.exports  = function AdminControllers(fn){
 						'app_intro':_data.intro
 					}],
 					["app_name","app_icon","app_intro"],
+					false,
 					function(){
 						res.send(200);
 						return next();
@@ -429,6 +536,7 @@ module.exports  = function AdminControllers(fn){
 								'app_dr_duration':req.body.newuservalidity
 							}],
 							["app_dr_amount","app_dr_duration"],
+							false,
 							function(){
 								res.send(200);
 								return next();
@@ -601,6 +709,7 @@ module.exports  = function AdminControllers(fn){
 								'dw_ruler':req.body.pattern
 							}],
 							["dw_ruler"],
+							false,
 							function () {
 								res.send(200);
 								return next();

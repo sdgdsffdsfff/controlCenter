@@ -9,9 +9,9 @@ module.exports  = function Base(fn){
 		return next();
 	};
 
-	base.sendError = function(res,content,next){
+	base.sendError = function(res,code,content,next){
 		res.setHeader('content-type', 'application/json');
-		res.send(401,content || {});
+		res.send(code || 401,content || {});
 		return next();
 	}
 

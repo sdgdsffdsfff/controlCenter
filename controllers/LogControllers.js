@@ -144,7 +144,7 @@ module.exports  = function LogControllers(fn,base){
 					}
 				);
 			}else{
-				return base.sendError(res,{},next);
+				return base.sendError(res,401,{},next);
 			}
 		});
 	};

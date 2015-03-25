@@ -172,18 +172,33 @@ module.exports = function  Fn(app){
 				});
 			});
 		},
-		'update':function(model,condition,fields_map,data,needed_fields,cb){
+		'update':function(model,condition,fields_map,data,needed_fields,flag,cb){//create if  not exist when  falg equals true
 			_fn.loadModel([model],function(m) {
 				_fn.mapingValues(fields_map,data,needed_fields,function(v){
 					m[model].find(
 						condition,
 						function(err,values){
-							for(var i in v[0]){
-								values[0][i] = v[0][i];
+							if("undefined"===typeof(values) || "undefined"===typeof(values[0])){
+								if(true === flag){
+									for(var i in v){
+										for(j in condition){
+											v[i][j] = condition[j];
+										}
+									}
+									m[model].create(v,function(err,values){
+										cb(values[0]);
+									});
+								}else{
+									cb();
+								}
+							}else{
+								for(var i in v[0]){
+									values[0][i] = v[0][i];
+								}
+								values[0].save(function (err) {
+									cb();
+								});
 							}
-							values[0].save(function (err) {
-								cb();
-							});
 						}
 					);
 				});

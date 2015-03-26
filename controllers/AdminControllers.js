@@ -168,18 +168,7 @@ module.exports  = function AdminControllers(fn,base){
 
 			}
 		})
-
-
-
-
-
 	};
-
-
-
-
-
-
 	_admin.appAuth = function(app_id,customer_id,cb){
 		fn.orm.get(
 			'Apps',

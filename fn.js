@@ -284,7 +284,7 @@ module.exports = function  Fn(app){
 		},
 		monthEnd:function(){
 			return moment().endOf('month').unix();
-		},
+		}
 	};
 	_fn.fetchRemote ={
 		get:function(url,cb){

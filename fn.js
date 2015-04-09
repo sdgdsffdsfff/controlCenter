@@ -135,22 +135,25 @@ module.exports = function  Fn(app){
 		},
 		'list':function(model,condition,limit,offset,fields_map,needed_fields,cb){
 			_fn.loadModel([model],function(m) {
-            var _m = m[model]
-                .find(condition)
-                .limit(limit)
-				.offset(offset);
-			   	if(false !== needed_fields  && "undefined" === typeof(needed_fields[0])){
-					_m.only(needed_fields)
-				}
-				_m.run(function (err, values) {
-                    if ("undefined" === typeof(values[0])) {
+				var _m = m[model]
+					.find(condition)
+					.limit(limit)
+					.offset(offset);
+
+					if(false !== needed_fields  && "undefined" === typeof(needed_fields[0])){
+						_m.only(needed_fields)
+					}
+
+					_m.run(function (err, values) {
+						
+					if ("undefined" === typeof(values[0])) {
 						cb([]);
-                    }else{
+					}else{
 						_fn.mapingValues(fields_map,values,needed_fields,function(v){
 							cb(v);
 						})
 					}
-                });
+				});
 			});
 		},
 		'create':function(model,fields_map,data,cb){

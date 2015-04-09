@@ -4,7 +4,7 @@ module.exports = function(db , cb){
 			user_id:String,
 			user_sdk_version:String,
 			user_phone_system:String,
-			user_phone_numner:Number,
+			user_phone_number:Number,
 			user_phone_imei:String,
 			user_card_imsi:String,
 			user_create_time:Number,

@@ -300,7 +300,7 @@ CREATE TABLE `users` (
   `id` int(10) NOT NULL AUTO_INCREMENT,
   `user_id` varchar(45) NOT NULL,
   `user_sdk_version` char(10) DEFAULT NULL,
-  `user_phone_numner` bigint(11) DEFAULT NULL,
+  `user_phone_number` bigint(11) DEFAULT NULL,
   `user_phone_system` varchar(45) DEFAULT NULL,
   `user_phone_imei` char(32) DEFAULT NULL,
   `user_card_imsi` char(32) NOT NULL,
@@ -329,4 +329,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2015-03-27 12:07:23
+-- Dump completed on 2015-04-10 14:04:56
